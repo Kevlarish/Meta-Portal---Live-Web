@@ -1,6 +1,63 @@
 {% extends "base.html" %}
 {% block body %}
 
+<style>
+ 
+  .page-container.watch-page {
+    position: relative;
+    z-index: 1 !important;
+  }
+
+  
+  header,
+  nav,
+  .navbar,
+  .topbar,
+  .top-nav,
+  .header,
+  .main-header,
+  .site-header,
+  .nav-bar,
+  .app-header {
+    position: relative;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+  }
+
+  header a,
+  header button,
+  header input,
+  header form,
+  nav a,
+  nav button,
+  nav input,
+  nav form,
+  .navbar a,
+  .navbar button,
+  .navbar input,
+  .navbar form,
+  .topbar a,
+  .topbar button,
+  .topbar input,
+  .topbar form,
+  .top-nav a,
+  .top-nav button,
+  .top-nav input,
+  .top-nav form,
+  .header a,
+  .header button,
+  .header input,
+  .header form,
+  .main-header a,
+  .main-header button,
+  .main-header input,
+  .main-header form {
+    position: relative;
+    z-index: 10000 !important;
+    pointer-events: auto !important;
+  }
+</style>
+
 <div class="page-container watch-page">
   <div class="watch-layout">
 
