@@ -13,7 +13,6 @@ import hashlib
 import hmac
 import math
 import os
-import re
 import secrets
 import threading
 import time
@@ -31,7 +30,8 @@ from web_models import (
 from portal_data import (
     DETAILED_MATCH_T1_PRX, LIVE_WATCH_MATCH, MASTER_SANTIAGO_DATA,
     NEWS_ARTICLES, PLAYER_F0RSAKEN, RESULT_MATCHES_LIST,
-    STATS_PLAYERS_DATA, TEAM_PAPER_REX, UPCOMING_MATCHES_LIST
+    STATS_PLAYERS_DATA, TEAM_PAPER_REX, UPCOMING_MATCHES_LIST,
+    get_watch_match
 )
 
 BASE = Path(__file__).resolve().parent
@@ -45,7 +45,7 @@ def _load_secret_key() -> str:
         return os.environ["SECRET_KEY"]
     key_file = DATA_DIR / "secret.key"
     if not key_file.exists():
-        try:      # dibuat atomik dengan izin 600 (hanya pemilik yang bisa membaca)
+        try:
             fd = os.open(key_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             with os.fdopen(fd, "w") as f:
                 f.write(secrets.token_hex(32))
@@ -71,7 +71,7 @@ if os.environ.get("TRUSTED_PROXY") == "1":
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 # ------------------------------------------------------------------ sesi
-SERVER_BOOT_ID = secrets.token_hex(8)          # berubah tiap server di-reload -> semua sesi lama dicabut
+SERVER_BOOT_ID = secrets.token_hex(8)
 IDLE_TIMEOUT_SECONDS = 15 * 60
 ABSOLUTE_TIMEOUT_SECONDS = 2 * 3600
 app.permanent_session_lifetime = timedelta(seconds=ABSOLUTE_TIMEOUT_SECONDS)
@@ -125,7 +125,6 @@ class RateLimiter:
         return q
 
     def wait(self, key: str) -> int:
-        """Sisa detik pemblokiran (0 = boleh)."""
         now = time.time()
         with self._lock:
             q = self._prune(key, now)
@@ -144,10 +143,10 @@ class RateLimiter:
             self._hits.pop(key, None)
 
 
-LOGIN_USER = RateLimiter(5, 15 * 60)       # 5 gagal per IP+username / 15 menit
-LOGIN_IP = RateLimiter(20, 15 * 60)        # 20 gagal per IP / 15 menit
-REGISTER_IP = RateLimiter(10, 60 * 60)     # 10 percobaan daftar per IP / jam
-PASSWORD_FAIL = RateLimiter(5, 15 * 60)    # 5 gagal verifikasi password (profil/ganti password)
+LOGIN_USER = RateLimiter(5, 15 * 60)
+LOGIN_IP = RateLimiter(20, 15 * 60)
+REGISTER_IP = RateLimiter(10, 60 * 60)
+PASSWORD_FAIL = RateLimiter(5, 15 * 60)
 
 
 def client_ip() -> str:
@@ -184,13 +183,12 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if not session.get("user"):
             flash("Silakan login terlebih dahulu untuk mengakses halaman ini.", "warn")
-            return redirect(url_for("login", next=request.path))
+            return redirect(url_for("login", next=request.full_path.rstrip("?")))
         return f(*args, **kwargs)
     return decorated_function
 
 
 def get_user_fingerprint(user_data: dict) -> str:
-    """Sidik jari kredensial: berubah jika password diganti/direset atau akun dimodifikasi."""
     raw = f"{user_data.get('username', '')}:{user_data.get('hash', '')}:{user_data.get('salt', '')}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
@@ -332,7 +330,7 @@ def login():
         else:
             store = get_store()
             if store.authenticate(u, p):
-                record = get_store().users.get(u.lower())        # dibaca ulang (hash bisa ter-upgrade)
+                record = get_store().users.get(u.lower())
                 if record is None:
                     flash("Username atau password salah.", "error")
                     return render_template("login.html")
@@ -365,7 +363,7 @@ def register():
         REGISTER_IP.hit(ip)
         f = request.form
         u, e = f.get("username", "").strip(), f.get("email", "").strip()
-        p, c = f.get("password", ""), f.get("confirm", "")        # password tidak boleh di-strip
+        p, c = f.get("password", ""), f.get("confirm", "")
         if not all((u, e, p, c)):
             flash("Semua kolom wajib diisi.", "warn")
         elif not USERNAME_RE.fullmatch(u):
@@ -405,7 +403,7 @@ def logout():
 
 
 # ============================================================
-# NEW FEATURE ROUTES (IMK PROTOTYPES - ALL REQUIRE LOGIN)
+# FEATURE ROUTES (IMK PROTOTYPES - ALL REQUIRE LOGIN)
 # ============================================================
 @app.route("/news/<slug>")
 @login_required
@@ -439,8 +437,11 @@ def match_detail(match_id):
 @app.route("/watch")
 @login_required
 def watch():
-    chat_messages = get_chat().get_messages()
-    return render_template("watch.html", watch_data=LIVE_WATCH_MATCH, chat_messages=chat_messages)
+    match_id = request.args.get("id", "").strip()
+    watch_data = get_watch_match(match_id)
+    room_id = watch_data.get("id") or LIVE_WATCH_MATCH["id"]
+    chat_messages = get_chat().get_messages(match_id=room_id)
+    return render_template("watch.html", watch_data=watch_data, chat_messages=chat_messages)
 
 
 @app.route("/stats")
@@ -508,7 +509,11 @@ def tournament_cn():
 @login_required
 def api_save_pickem():
     user = session.get("user") or "Guest"
-    picks = request.get_json(silent=True) or {}
+    picks = body()
+    if not picks or len(picks) > 20 or not all(
+        isinstance(k, str) and isinstance(v, str) and len(v) <= 50 for k, v in picks.items()
+    ):
+        return jsonify({"ok": False, "message": "Data Pick'em tidak valid."}), 400
     get_pickem().save_user_pickem(user, picks)
     return jsonify({"ok": True, "message": "Pick'em berhasil disimpan!"})
 
@@ -552,9 +557,13 @@ def forum_new():
 def forum_reply(thread_id):
     comment = request.form.get("comment", "").strip()
     author = session.get("user") or "Guest"
-    if comment:
-        get_forum().add_comment(thread_id, author, comment)
+    if not comment:
+        flash("Komentar tidak boleh kosong.", "warn")
+    elif get_forum().add_comment(thread_id, author, comment):
         flash("Balasan berhasil dikirim.", "ok")
+    else:
+        flash("Thread diskusi tidak ditemukan.", "error")
+        return redirect(url_for("forum"))
     return redirect(url_for("forum_thread", thread_id=thread_id))
 
 
@@ -658,7 +667,6 @@ def api_profile():
 
 
 def _check_password(user: str, pwd: str):
-    """Verifikasi password dengan pembatasan percobaan. Mengembalikan (ok, respons_error)."""
     key = f"{client_ip()}|{user.lower()}"
     wait = PASSWORD_FAIL.wait(key)
     if wait:
@@ -707,7 +715,7 @@ def api_profile_password():
         return err
     ok, msg = get_store().change_password(user, old, new)
     if ok:
-        refresh_session_sig()             # sesi ini tetap hidup; sesi lain di perangkat lain dicabut
+        refresh_session_sig()
     return jsonify({"ok": ok, "message": msg}), (200 if ok else 400)
 
 
@@ -753,8 +761,9 @@ def api_chat_messages():
     user, err = api_user()
     if err:
         return err
+    match_id = request.args.get("match_id", "").strip() or None
     since_id = request.args.get("since", "").strip() or None
-    msgs = get_chat().get_messages(since_id=since_id)
+    msgs = get_chat().get_messages(match_id=match_id, since_id=since_id)
     return jsonify({"ok": True, "messages": msgs})
 
 
@@ -764,15 +773,16 @@ def api_chat_send():
     if err:
         return err
     d = body()
+    match_id = text(d, "match_id").strip() or None
     msg_text = text(d, "msg").strip()
     if not msg_text:
         return jsonify({"ok": False, "message": "Pesan tidak boleh kosong."}), 400
     if len(msg_text) > 300:
         return jsonify({"ok": False, "message": "Pesan maksimal 300 karakter."}), 400
     try:
-        new_msg = get_chat().add_message(sender=user, msg=msg_text)
+        new_msg = get_chat().add_message(sender=user, msg=msg_text, match_id=match_id)
         return jsonify({"ok": True, "message": new_msg})
-    except Exception as e:
+    except Exception:
         return jsonify({"ok": False, "message": "Gagal menyimpan pesan."}), 500
 
 

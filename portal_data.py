@@ -1,18 +1,10 @@
 """
 portal_data.py - Data store dan dataset lengkap untuk META.PORTAL
-Mencakup data matches, tournaments, pick'ems, stats, teams, players, forum, dan news
+Mencakup data matches, tournaments, pick'ems, stats, teams, players, dan news
 sesuai dengan prototype UI/UX mata kuliah IMK.
 """
 
 from __future__ import annotations
-import json
-import uuid
-from datetime import datetime
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parent
-FORUM_FILE = BASE_DIR / "forum.json"
-PICKEM_FILE = BASE_DIR / "pickems.json"
 
 # ============================================================
 # 1. NEWS DATA (Articles & Feeds)
@@ -115,9 +107,13 @@ UPCOMING_MATCHES_LIST = [
         "time": "14:00",
         "flag_a": "🇯🇵",
         "team_a": "REIGNITE FOXX",
+        "team_a_code": "RGN",
+        "team_a_tag": "#JP1",
         "score_a": "1",
         "flag_b": "🇯🇵",
         "team_b": "Insomnia",
+        "team_b_code": "INS",
+        "team_b_tag": "#JP2",
         "score_b": "1",
         "status_type": "live",
         "status_text": "LIVE",
@@ -125,16 +121,22 @@ UPCOMING_MATCHES_LIST = [
         "vods_status": "Pending",
         "tournament_stage": "Phase 2-Lower Round 1",
         "tournament_name": "Challengers 2026: Japan Split 1",
-        "accent": "#17b890"
+        "accent": "#17b890",
+        "lineup_team_name": "REIGNITE FOXX LINEUP",
+        "lineup_players": ["DHY", "RIPP", "Kuro", "Sora", "Nagi"]
     },
     {
         "id": "m-up-2",
         "time": "16:00",
         "flag_a": "🇨🇳",
         "team_a": "FunPlus Phoenix",
+        "team_a_code": "FPX",
+        "team_a_tag": "#CN1",
         "score_a": "0",
         "flag_b": "🇨🇳",
         "team_b": "TYLOO",
+        "team_b_code": "TYL",
+        "team_b_tag": "#CN2",
         "score_b": "1",
         "status_type": "live",
         "status_text": "LIVE",
@@ -142,16 +144,22 @@ UPCOMING_MATCHES_LIST = [
         "vods_status": "Pending",
         "tournament_stage": "Group Stage-Week 2",
         "tournament_name": "VCT 2026: China Stage 1",
-        "accent": "#e0263b"
+        "accent": "#e0263b",
+        "lineup_team_name": "FUNPLUS PHOENIX LINEUP",
+        "lineup_players": ["AAAAY", "SACY", "BERLIN", "LIFE", "AUTUMN"]
     },
     {
         "id": "m-up-3",
         "time": "17:00",
         "flag_a": "🇯🇵",
         "team_a": "WEC C",
+        "team_a_code": "WEC",
+        "team_a_tag": "#JP3",
         "score_a": "0",
         "flag_b": "🇯🇵",
         "team_b": "RIDDLE ORDER",
+        "team_b_code": "RDL",
+        "team_b_tag": "#JP1",
         "score_b": "0",
         "status_type": "live",
         "status_text": "LIVE",
@@ -159,16 +167,22 @@ UPCOMING_MATCHES_LIST = [
         "vods_status": "Pending",
         "tournament_stage": "Phase 2-Lower Round 1",
         "tournament_name": "Challengers 2026: Japan Split 1",
-        "accent": "#17b890"
+        "accent": "#17b890",
+        "lineup_team_name": "RIDDLE ORDER LINEUP",
+        "lineup_players": ["CAEDYE", "SEOLDAM", "JOXJO", "AACE", "YATSUKA"]
     },
     {
         "id": "m-up-4",
         "time": "18:00",
         "flag_a": "🇨🇳",
         "team_a": "Titan Esports Club",
+        "team_a_code": "TEC",
+        "team_a_tag": "#CN4",
         "score_a": "-",
         "flag_b": "🇨🇳",
         "team_b": "Bilibili Gaming",
+        "team_b_code": "BLG",
+        "team_b_tag": "#CHINA1",
         "score_b": "-",
         "status_type": "upcoming",
         "status_text": "Upcoming 49m",
@@ -176,126 +190,170 @@ UPCOMING_MATCHES_LIST = [
         "vods_status": "Pending",
         "tournament_stage": "Group Stage-Week 2",
         "tournament_name": "VCT 2026: China Stage 1",
-        "accent": "#e0263b"
+        "accent": "#e0263b",
+        "lineup_team_name": "BILIBILI GAMING LINEUP",
+        "lineup_players": ["WHZY", "NEPHH", "KNIGHT", "BIAN", "LEVIUS"]
     },
     {
         "id": "m-up-5",
         "time": "18:00",
         "flag_a": "🇸🇦",
         "team_a": "Team Falcons Vega",
+        "team_a_code": "FLC",
+        "team_a_tag": "#MENA1",
         "score_a": "-",
         "flag_b": "🇵🇭",
         "team_b": "TRENTITAS",
+        "team_b_code": "TRN",
+        "team_b_tag": "#SEA2",
         "score_b": "-",
         "status_type": "upcoming",
         "status_text": "Upcoming 49m",
         "stats_status": "Pending",
         "vods_status": "Pending",
         "tournament_stage": "Playoffs-Upper Quarterfinals",
-        "tournament_name": "Game Changers 2026: Southe...",
-        "accent": "#f0a000"
+        "tournament_name": "Game Changers 2026: Southeast Asia",
+        "accent": "#f0a000",
+        "lineup_team_name": "TEAM FALCONS VEGA LINEUP",
+        "lineup_players": ["MARY", "MODI", "SANDRA", "NEV", "LUNA"]
     },
     {
         "id": "m-up-6",
         "time": "21:00",
         "flag_a": "🇲🇾",
         "team_a": "IVY",
+        "team_a_code": "IVY",
+        "team_a_tag": "#MY1",
         "score_a": "-",
         "flag_b": "🇦🇺",
         "team_b": "Azure GC",
+        "team_b_code": "AZR",
+        "team_b_tag": "#OCE1",
         "score_b": "-",
         "status_type": "upcoming",
         "status_text": "Upcoming 3h 49m",
         "stats_status": "Pending",
         "vods_status": "Pending",
         "tournament_stage": "Playoffs-Upper Quarterfinals",
-        "tournament_name": "Game Changers 2026: Southe...",
-        "accent": "#f0a000"
+        "tournament_name": "Game Changers 2026: Southeast Asia",
+        "accent": "#f0a000",
+        "lineup_team_name": "IVY TEAM LINEUP",
+        "lineup_players": ["KAI", "LYNN", "HANA", "MIRA", "ZOE"]
     },
     {
         "id": "m-up-7",
         "time": "21:30",
         "flag_a": "🇹🇷",
         "team_a": "Fire Flux Esports",
+        "team_a_code": "FF",
+        "team_a_tag": "#TR1",
         "score_a": "-",
         "flag_b": "🇹🇷",
         "team_b": "REBORN",
+        "team_b_code": "RBN",
+        "team_b_tag": "#TR2",
         "score_b": "-",
         "status_type": "upcoming",
         "status_text": "Upcoming 4h 19m",
         "stats_status": "Pending",
         "vods_status": "Pending",
         "tournament_stage": "Group Stage-Week 1",
-        "tournament_name": "Challengers 2026: Türkiye Birli...",
-        "accent": "#f2c200"
+        "tournament_name": "Challengers 2026: Türkiye Birlik",
+        "accent": "#f2c200",
+        "lineup_team_name": "FIRE FLUX LINEUP",
+        "lineup_players": ["LAU", "WO0T", "RUXIC", "SOCIABLEE", "QRAXS"]
     },
     {
         "id": "m-up-8",
         "time": "22:00",
         "flag_a": "🇪🇸",
         "team_a": "Barça eSports",
+        "team_a_code": "BAR",
+        "team_a_tag": "#ES1",
         "score_a": "-",
         "flag_b": "🇪🇸",
         "team_b": "Otakar Esports",
+        "team_b_code": "OTK",
+        "team_b_tag": "#ES2",
         "score_b": "-",
         "status_type": "upcoming",
         "status_text": "Upcoming 4h 49m",
         "stats_status": "Pending",
         "vods_status": "Pending",
         "tournament_stage": "Phase 1-Upper Semifinals",
-        "tournament_name": "Challengers 2026: Spain Risin...",
-        "accent": "#f2c200"
+        "tournament_name": "Challengers 2026: Spain Rising",
+        "accent": "#f2c200",
+        "lineup_team_name": "BARÇA ESPORTS LINEUP",
+        "lineup_players": ["GUARD", "VORWEN", "FIT1NHO", "KILES", "MANIEK"]
     },
     {
         "id": "m-up-9",
         "time": "22:00",
         "flag_a": "🇮🇹",
         "team_a": "NOVO Esports",
+        "team_a_code": "NOV",
+        "team_a_tag": "#IT1",
         "score_a": "-",
         "flag_b": "🇮🇹",
         "team_b": "HGE Esport",
+        "team_b_code": "HGE",
+        "team_b_tag": "#IT2",
         "score_b": "-",
         "status_type": "upcoming",
         "status_text": "Upcoming 4h 49m",
         "stats_status": "Pending",
         "vods_status": "Pending",
         "tournament_stage": "Phase 1-Lower Round 1",
-        "tournament_name": "Challengers 2026: Spain Risin...",
-        "accent": "#f2c200"
+        "tournament_name": "Challengers 2026: Spain Rising",
+        "accent": "#f2c200",
+        "lineup_team_name": "NOVO ESPORTS LINEUP",
+        "lineup_players": ["ALORANTE", "BJOR", "SIMON", "REX", "VEX"]
     },
     {
         "id": "m-up-10",
         "time": "23:00",
         "flag_a": "🇩🇪",
         "team_a": "RIZON",
+        "team_a_code": "RZN",
+        "team_a_tag": "#DACH1",
         "score_a": "-",
         "flag_b": "🇩🇪",
         "team_b": "CGN Esports",
+        "team_b_code": "CGN",
+        "team_b_tag": "#DACH2",
         "score_b": "-",
         "status_type": "upcoming",
         "status_text": "Upcoming 5h 49m",
         "stats_status": "Pending",
         "vods_status": "Pending",
         "tournament_stage": "Group Stage-Week 2",
-        "tournament_name": "Challengers 2026: DACH Evol...",
-        "accent": "#e0263b"
+        "tournament_name": "Challengers 2026: DACH Evolution",
+        "accent": "#e0263b",
+        "lineup_team_name": "CGN ESPORTS LINEUP",
+        "lineup_players": ["BENNYY", "AZURY", "DAVI", "ELIAS", "KAI"]
     },
     {
         "id": "m-up-11",
         "time": "23:00",
         "flag_a": "🇩🇪",
         "team_a": "AKA HERO",
+        "team_a_code": "AKA",
+        "team_a_tag": "#DACH3",
         "score_a": "-",
         "flag_b": "🇩🇪",
         "team_b": "FOKUS",
+        "team_b_code": "FKS",
+        "team_b_tag": "#DACH1",
         "score_b": "-",
         "status_type": "upcoming",
         "status_text": "Upcoming 5h 49m",
         "stats_status": "Pending",
         "vods_status": "Pending",
         "tournament_stage": "Group Stage-Week 2",
-        "tournament_name": "Challengers 2026: DACH Evol...",
-        "accent": "#e0263b"
+        "tournament_name": "Challengers 2026: DACH Evolution",
+        "accent": "#e0263b",
+        "lineup_team_name": "FOKUS LINEUP",
+        "lineup_players": ["JUGI", "YAABOY", "LUCA", "HOOD", "MOE"]
     }
 ]
 
@@ -305,14 +363,18 @@ RESULT_MATCHES_LIST = [
         "time": "06:10",
         "flag_a": "🇺🇸",
         "team_a": "Shopify Rebellion Black",
+        "team_a_code": "SRB",
+        "team_a_tag": "#NA1",
         "score_a": 2,
         "flag_b": "🇺🇸",
         "team_b": "QoR",
+        "team_b_code": "QOR",
+        "team_b_tag": "#NA2",
         "score_b": 0,
         "elapsed": "11h 30m",
         "has_stats": True,
         "tournament_stage": "Swiss Stage-Round 4 (2-1)",
-        "tournament_name": "Challengers 2026: North Amer...",
+        "tournament_name": "Challengers 2026: North America",
         "accent": "#17b890"
     },
     {
@@ -320,14 +382,18 @@ RESULT_MATCHES_LIST = [
         "time": "06:00",
         "flag_a": "🇧🇷",
         "team_a": "Paysandu Esports",
+        "team_a_code": "PAY",
+        "team_a_tag": "#BR1",
         "score_a": 2,
         "flag_b": "🇧🇷",
         "team_b": "MIBR GC",
+        "team_b_code": "MIBR",
+        "team_b_tag": "#BR2",
         "score_b": 0,
         "elapsed": "11h 40m",
         "has_stats": True,
-        "tournament_stage": "Access Series-Upper Semifin...",
-        "tournament_name": "Challengers 2026: Brazil Gam...",
+        "tournament_stage": "Access Series-Upper Semifinals",
+        "tournament_name": "Challengers 2026: Brazil Gamers",
         "accent": "#17b890"
     },
     {
@@ -335,14 +401,18 @@ RESULT_MATCHES_LIST = [
         "time": "06:00",
         "flag_a": "🇧🇷",
         "team_a": "Remo Esports",
+        "team_a_code": "REM",
+        "team_a_tag": "#BR3",
         "score_a": 1,
         "flag_b": "🇧🇷",
         "team_b": "Team Liquid Brazil",
+        "team_b_code": "TLB",
+        "team_b_tag": "#BR1",
         "score_b": 2,
         "elapsed": "11h 40m",
         "has_stats": True,
-        "tournament_stage": "Access Series-Upper Semifin...",
-        "tournament_name": "Challengers 2026: Brazil Gam...",
+        "tournament_stage": "Access Series-Upper Semifinals",
+        "tournament_name": "Challengers 2026: Brazil Gamers",
         "accent": "#17b890"
     },
     {
@@ -350,14 +420,18 @@ RESULT_MATCHES_LIST = [
         "time": "05:20",
         "flag_a": "🇺🇸",
         "team_a": "Nightblood Gaming",
+        "team_a_code": "NBG",
+        "team_a_tag": "#NA3",
         "score_a": 2,
         "flag_b": "🇺🇸",
         "team_b": "Pigeons",
+        "team_b_code": "PGN",
+        "team_b_tag": "#NA4",
         "score_b": 1,
         "elapsed": "12h 20m",
         "has_stats": True,
         "tournament_stage": "Swiss Stage-Round 4 (1-2)",
-        "tournament_name": "Challengers 2026: North Amer...",
+        "tournament_name": "Challengers 2026: North America",
         "accent": "#17b890"
     },
     {
@@ -365,14 +439,18 @@ RESULT_MATCHES_LIST = [
         "time": "03:00",
         "flag_a": "🇨🇦",
         "team_a": "Shopify Rebellion Gold",
+        "team_a_code": "SRG",
+        "team_a_tag": "#NA2",
         "score_a": 1,
         "flag_b": "🇺🇸",
         "team_b": "ROSE",
+        "team_b_code": "ROSE",
+        "team_b_tag": "#NA5",
         "score_b": 2,
         "elapsed": "14h 40m",
         "has_stats": True,
         "tournament_stage": "Swiss Stage-Round 4 (0-3)",
-        "tournament_name": "Challengers 2026: North Amer...",
+        "tournament_name": "Challengers 2026: North America",
         "accent": "#17b890"
     },
     {
@@ -380,14 +458,18 @@ RESULT_MATCHES_LIST = [
         "time": "03:00",
         "flag_a": "🇺🇸",
         "team_a": "Evil Geniuses Academy",
+        "team_a_code": "EGA",
+        "team_a_tag": "#NA3",
         "score_a": 2,
         "flag_b": "🇺🇸",
         "team_b": "Division One",
+        "team_b_code": "DIV1",
+        "team_b_tag": "#NA6",
         "score_b": 0,
         "elapsed": "14h 40m",
         "has_stats": True,
         "tournament_stage": "Swiss Stage-Round 4 (1-2)",
-        "tournament_name": "Challengers 2026: North Amer...",
+        "tournament_name": "Challengers 2026: North America",
         "accent": "#17b890"
     },
     {
@@ -395,14 +477,18 @@ RESULT_MATCHES_LIST = [
         "time": "03:00",
         "flag_a": "🇧🇷",
         "team_a": "MIBR GC",
+        "team_a_code": "MIBR",
+        "team_a_tag": "#BR2",
         "score_a": 2,
         "flag_b": "🇧🇷",
         "team_b": "Lost Puppies Quackers",
+        "team_b_code": "LPQ",
+        "team_b_tag": "#BR4",
         "score_b": 1,
         "elapsed": "14h 40m",
         "has_stats": True,
         "tournament_stage": "Access Series-Round of 6",
-        "tournament_name": "Challengers 2026: Brazil Gam...",
+        "tournament_name": "Challengers 2026: Brazil Gamers",
         "accent": "#17b890"
     },
     {
@@ -410,14 +496,18 @@ RESULT_MATCHES_LIST = [
         "time": "03:00",
         "flag_a": "🇧🇷",
         "team_a": "Team Liquid Brazil",
+        "team_a_code": "TLB",
+        "team_a_tag": "#BR1",
         "score_a": 2,
         "flag_b": "🇧🇷",
         "team_b": "Underhounds",
+        "team_b_code": "UND",
+        "team_b_tag": "#BR5",
         "score_b": 0,
         "elapsed": "14h 40m",
         "has_stats": True,
         "tournament_stage": "Access Series-Round of 6",
-        "tournament_name": "Challengers 2026: Brazil Gam...",
+        "tournament_name": "Challengers 2026: Brazil Gamers",
         "accent": "#17b890"
     },
     {
@@ -425,14 +515,18 @@ RESULT_MATCHES_LIST = [
         "time": "02:00",
         "flag_a": "🇦🇷",
         "team_a": "Olimpo Gold",
+        "team_a_code": "OLM",
+        "team_a_tag": "#LATAM2",
         "score_a": 0,
         "flag_b": "🇨🇱",
         "team_b": "KRÜ BLAZE",
+        "team_b_code": "KRU",
+        "team_b_tag": "#LATAM1",
         "score_b": 3,
         "elapsed": "15h 40m",
         "has_stats": True,
         "tournament_stage": "Playoffs-Grand Final",
-        "tournament_name": "Game Changers 2026: LATAM...",
+        "tournament_name": "Game Changers 2026: LATAM",
         "accent": "#f0a000"
     },
     {
@@ -440,14 +534,18 @@ RESULT_MATCHES_LIST = [
         "time": "01:35",
         "flag_a": "🇫🇷",
         "team_a": "Nuxeria Esport",
+        "team_a_code": "NUX",
+        "team_a_tag": "#FR1",
         "score_a": 2,
         "flag_b": "🇫🇷",
         "team_b": "F9 EICAR",
+        "team_b_code": "F9",
+        "team_b_tag": "#FR2",
         "score_b": 0,
         "elapsed": "16h 5m",
         "has_stats": True,
         "tournament_stage": "Group Stage-Week 1",
-        "tournament_name": "Challengers 2026: France Rev...",
+        "tournament_name": "Challengers 2026: France Revolution",
         "accent": "#f2c200"
     },
     {
@@ -455,14 +553,18 @@ RESULT_MATCHES_LIST = [
         "time": "00:30",
         "flag_a": "🇮🇹",
         "team_a": "DNSTY",
+        "team_a_code": "DNS",
+        "team_a_tag": "#IT1",
         "score_a": 2,
         "flag_b": "🇪🇸",
         "team_b": "Ramboot Club",
+        "team_b_code": "RBT",
+        "team_b_tag": "#ES3",
         "score_b": 1,
         "elapsed": "17h 10m",
         "has_stats": True,
         "tournament_stage": "Phase 1-Upper Quarterfinals",
-        "tournament_name": "Challengers 2026: Spain Risin...",
+        "tournament_name": "Challengers 2026: Spain Rising",
         "accent": "#f2c200"
     }
 ]
@@ -538,13 +640,37 @@ DETAILED_MATCH_T1_PRX = {
 
 
 # ============================================================
-# 4. LIVE WATCH ROOM (BiliBili vs Team Liquid)
+# 4. LIVE WATCH ROOM (Default & Dynamic Lookup)
 # ============================================================
 LIVE_WATCH_MATCH = {
+    "id": "blg-vs-tl",
     "title": "BiliBili vs Team Liquid - Upper Bracket Round 1",
     "video_title": "00:15:24 PLAYOFF DAY - 1",
+    "status_type": "live",
+    "status_text": "LIVE",
+    "time": "16:00",
+    "tournament_name": "Master Santiago 2026",
+    "tournament_stage": "Upper Bracket Round 1",
+    "flag_a": "🇨🇳",
+    "team_a_name": "BiliBili Gaming",
+    "team_a_code": "BLG",
+    "team_a_tag": "#CHINA1",
+    "score_a": "0",
+    "flag_b": "🇪🇺",
+    "team_b_name": "Team Liquid",
+    "team_b_code": "TL",
+    "team_b_tag": "#EMEA3",
+    "score_b": "0",
+    "secondary_game": {
+        "team_a_code": "RRQ",
+        "team_a_tag": "#PAC1",
+        "team_b_code": "T1",
+        "team_b_tag": "#PAC2",
+    },
     "lineup_team_1": "BiliBili Gaming (BLG)",
     "lineup_team_2": "Team Liquid (TL)",
+    "lineup_team_name": "T1 TEAM LINEUP",
+    "lineup_players": ["CARPE", "IZU", "KDG", "METEOR", "MUNCHKIN"],
     "initial_chat": [
         {"sender": "Connor", "msg": "When does Sentinel plays?"},
         {"sender": "Ikuyo Kita", "msg": "Can't wait for BLG stomp TL"},
@@ -553,6 +679,81 @@ LIVE_WATCH_MATCH = {
         {"sender": "Kazuma", "msg": "is it just us in here?"}
     ]
 }
+
+
+def get_watch_match(match_id: str | None) -> dict:
+    """Cari data pertandingan untuk halaman /watch berdasarkan ID/slug; fallback ke LIVE_WATCH_MATCH."""
+    if not match_id:
+        return dict(LIVE_WATCH_MATCH)
+    target = match_id.strip().lower()
+    if target in ("", "default", LIVE_WATCH_MATCH["id"]):
+        return dict(LIVE_WATCH_MATCH)
+
+    for item in UPCOMING_MATCHES_LIST:
+        if item["id"].lower() == target:
+            is_live = item.get("status_type") == "live"
+            video_title = (
+                f"LIVE • {item['tournament_name'].upper()}"
+                if is_live
+                else f"{item['time']} WIB • {item['status_text'].upper()}"
+            )
+            return {
+                "id": item["id"],
+                "title": f"{item['team_a']} vs {item['team_b']} - {item['tournament_stage']}",
+                "video_title": video_title,
+                "status_type": item.get("status_type", "upcoming"),
+                "status_text": item.get("status_text", "Upcoming"),
+                "time": item.get("time", ""),
+                "tournament_name": item.get("tournament_name", ""),
+                "tournament_stage": item.get("tournament_stage", ""),
+                "flag_a": item.get("flag_a", ""),
+                "team_a_name": item["team_a"],
+                "team_a_code": item.get("team_a_code", item["team_a"][:3].upper()),
+                "team_a_tag": item.get("team_a_tag", "#TEAM1"),
+                "score_a": item.get("score_a", "-"),
+                "flag_b": item.get("flag_b", ""),
+                "team_b_name": item["team_b"],
+                "team_b_code": item.get("team_b_code", item["team_b"][:3].upper()),
+                "team_b_tag": item.get("team_b_tag", "#TEAM2"),
+                "score_b": item.get("score_b", "-"),
+                "secondary_game": None,
+                "lineup_team_1": f"{item['team_a']} ({item.get('team_a_code', '')})",
+                "lineup_team_2": f"{item['team_b']} ({item.get('team_b_code', '')})",
+                "lineup_team_name": item.get("lineup_team_name", f"{item['team_a'].upper()} LINEUP"),
+                "lineup_players": item.get("lineup_players", ["PLAYER 1", "PLAYER 2", "PLAYER 3", "PLAYER 4", "PLAYER 5"]),
+                "initial_chat": [],
+            }
+
+    for item in RESULT_MATCHES_LIST:
+        if item["id"].lower() == target:
+            return {
+                "id": item["id"],
+                "title": f"{item['team_a']} vs {item['team_b']} - {item['tournament_stage']}",
+                "video_title": f"COMPLETED • {item['tournament_name'].upper()}",
+                "status_type": "completed",
+                "status_text": f"Completed {item.get('elapsed', '')}".strip(),
+                "time": item.get("time", ""),
+                "tournament_name": item.get("tournament_name", ""),
+                "tournament_stage": item.get("tournament_stage", ""),
+                "flag_a": item.get("flag_a", ""),
+                "team_a_name": item["team_a"],
+                "team_a_code": item.get("team_a_code", item["team_a"][:3].upper()),
+                "team_a_tag": item.get("team_a_tag", "#TEAM1"),
+                "score_a": str(item.get("score_a", 0)),
+                "flag_b": item.get("flag_b", ""),
+                "team_b_name": item["team_b"],
+                "team_b_code": item.get("team_b_code", item["team_b"][:3].upper()),
+                "team_b_tag": item.get("team_b_tag", "#TEAM2"),
+                "score_b": str(item.get("score_b", 0)),
+                "secondary_game": None,
+                "lineup_team_1": f"{item['team_a']} ({item.get('team_a_code', '')})",
+                "lineup_team_2": f"{item['team_b']} ({item.get('team_b_code', '')})",
+                "lineup_team_name": f"{item['team_a'].upper()} LINEUP",
+                "lineup_players": ["PLAYER 1", "PLAYER 2", "PLAYER 3", "PLAYER 4", "PLAYER 5"],
+                "initial_chat": [],
+            }
+
+    return dict(LIVE_WATCH_MATCH)
 
 
 # ============================================================
@@ -774,159 +975,3 @@ PLAYER_F0RSAKEN = {
         {"agent": "Breach", "use": "(2) 7%", "rnd": 44, "rating": 1.04, "acs": 161.0, "kd": 0.92, "adr": 114.1, "kast": "82%", "kpr": 0.55, "apr": 0.61, "fkpr": 0.02, "fdpr": 0.05, "k": 24, "d": 26, "a": 27, "fk": 1, "fd": 2},
     ]
 }
-
-
-# ============================================================
-# 8. FORUM DATA & STORE
-# ============================================================
-DEFAULT_FORUM_THREADS = [
-    {
-        "id": "th-1",
-        "title": "Prx train?",
-        "author": "Syctiz",
-        "replies_count": 4,
-        "comments": [
-            {"author": "Pelix", "text": "We are going choo choo", "time": "8 Minutes ago"},
-            {"author": "MARS", "text": "nahh the trains stop here", "time": "6 Minutes ago"},
-            {"author": "Hakari", "text": "Ofc, prx are fraud", "time": "4 Minutes ago", "reply_to": "MARS"},
-            {"author": "oseano", "text": "WE WILL DESTORY EVERYBODY ELSE, WE WILL DESTROY LONDON", "time": "5 Minutes ago"}
-        ]
-    },
-    {
-        "id": "th-2",
-        "title": "Will EMEA be fraud?",
-        "author": "Kazuma",
-        "replies_count": 18,
-        "comments": [
-            {"author": "Connor", "text": "Fnatic will carry the whole region as usual.", "time": "15 Minutes ago"}
-        ]
-    },
-    {
-        "id": "th-3",
-        "title": "CHINA NUMBER 1 WE WILL TAKE OVER THE WORLD!!!",
-        "author": "maRs",
-        "replies_count": 25,
-        "comments": [
-            {"author": "EDG_Fan", "text": "EDG and BLG are taking it all this year!", "time": "20 Minutes ago"}
-        ]
-    },
-    {
-        "id": "th-4",
-        "title": "Will C9 miracle continues?",
-        "author": "Linardeeeeeese",
-        "replies_count": 9,
-        "comments": [
-            {"author": "NA_Hope", "text": "Believe in the boys in blue!", "time": "30 Minutes ago"}
-        ]
-    },
-    {
-        "id": "th-5",
-        "title": "This is the most boring masters ever..",
-        "author": "Shield",
-        "replies_count": 34,
-        "comments": [
-            {"author": "ValorantEnthusiast", "text": "Wait until playoffs start, Swiss stage is just warming up.", "time": "1 hour ago"}
-        ]
-    },
-    {
-        "id": "th-6",
-        "title": "RRQ slams all teams",
-        "author": "cmaEv0s",
-        "replies_count": 40,
-        "comments": [
-            {"author": "KingRRQ", "text": "Pacific supremacy is inevitable.", "time": "2 hours ago"}
-        ]
-    },
-    {
-        "id": "th-7",
-        "title": "Hi",
-        "author": "oseano",
-        "replies_count": 3,
-        "comments": [
-            {"author": "Admin", "text": "Welcome to META.PORTAL community forum!", "time": "3 hours ago"}
-        ]
-    }
-]
-
-
-class ForumStore:
-    def __init__(self, path: Path = FORUM_FILE):
-        self.path = path
-        try:
-            self.threads = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            self.threads = DEFAULT_FORUM_THREADS
-            self._save()
-
-    def _save(self):
-        try:
-            self.path.write_text(json.dumps(self.threads, indent=2), encoding="utf-8")
-        except OSError:
-            pass
-
-    def get_all(self, query: str = "") -> list[dict]:
-        if not query:
-            return self.threads
-        q = query.lower()
-        return [t for t in self.threads if q in t["title"].lower() or q in t["author"].lower()]
-
-    def get_thread(self, thread_id: str) -> dict | None:
-        for t in self.threads:
-            if t["id"] == thread_id:
-                return t
-        return None
-
-    def create_thread(self, title: str, content: str, author: str) -> dict:
-        t_id = f"th-{uuid.uuid4().hex[:6]}"
-        new_th = {
-            "id": t_id,
-            "title": title.strip(),
-            "author": author.strip() or "Guest",
-            "replies_count": 1 if content.strip() else 0,
-            "comments": [
-                {"author": author.strip() or "Guest", "text": content.strip(), "time": "Just now"}
-            ] if content.strip() else []
-        }
-        self.threads.insert(0, new_th)
-        self._save()
-        return new_th
-
-    def add_comment(self, thread_id: str, author: str, text: str) -> bool:
-        t = self.get_thread(thread_id)
-        if not t:
-            return False
-        t["comments"].append({
-            "author": author or "Guest",
-            "text": text.strip(),
-            "time": "Just now"
-        })
-        t["replies_count"] = len(t["comments"])
-        self._save()
-        return True
-
-
-class PickemStore:
-    def __init__(self, path: Path = PICKEM_FILE):
-        self.path = path
-        try:
-            self.data = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            self.data = {}
-            self._save()
-
-    def _save(self):
-        try:
-            self.path.write_text(json.dumps(self.data, indent=2), encoding="utf-8")
-        except OSError:
-            pass
-
-    def get_user_pickem(self, username: str) -> dict:
-        return self.data.get(username.lower(), {})
-
-    def save_user_pickem(self, username: str, picks: dict):
-        self.data[username.lower()] = {
-            "picks": picks,
-            "saved_at": datetime.now().strftime("%d %b %Y, %H:%M"),
-            "score": 300  # Default demo simulation score
-        }
-        self._save()

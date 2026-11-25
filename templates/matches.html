@@ -22,7 +22,7 @@
     <div class="matches-tab-content {% if active_tab != 'result' %}active{% endif %}" id="tabContentUpcoming">
       <div class="match-list-table">
         {% for m in upcoming_matches %}
-        <div class="match-row match-row--upcoming" onclick="window.location.href='/watch'">
+        <div class="match-row match-row--upcoming" data-match-id="{{ m.id }}" onclick="window.location.href='/watch?id={{ m.id }}'">
           <div class="col-time">{{ m.time }}</div>
           
           <div class="col-teams">
@@ -69,7 +69,7 @@
     <div class="matches-tab-content {% if active_tab == 'result' %}active{% endif %}" id="tabContentResult">
       <div class="match-list-table">
         {% for m in result_matches %}
-        <div class="match-row match-row--result" onclick="window.location.href='/match/t1-vs-prx'">
+        <div class="match-row match-row--result" data-match-id="{{ m.id }}" onclick="window.location.href='/match/t1-vs-prx'">
           <div class="col-time">{{ m.time }}</div>
           
           <div class="col-teams">
@@ -116,14 +116,23 @@
 </div>
 
 <script>
-function switchMatchesTab(tab) {
-  const isUp = (tab === 'upcoming');
+function applyMatchesTabUI(tab) {
+  const isUp = (tab !== 'result');
   document.getElementById('tabBtnUpcoming').classList.toggle('active', isUp);
   document.getElementById('tabBtnResult').classList.toggle('active', !isUp);
   document.getElementById('tabContentUpcoming').classList.toggle('active', isUp);
   document.getElementById('tabContentResult').classList.toggle('active', !isUp);
-  history.replaceState(null, '', '/matches?tab=' + tab);
 }
+
+function switchMatchesTab(tab) {
+  applyMatchesTabUI(tab);
+  history.replaceState({ tab: tab }, '', '/matches?tab=' + encodeURIComponent(tab));
+}
+
+window.addEventListener('popstate', function () {
+  const params = new URLSearchParams(window.location.search);
+  applyMatchesTabUI((params.get('tab') || 'upcoming').toLowerCase());
+});
 </script>
 
 {% endblock %}

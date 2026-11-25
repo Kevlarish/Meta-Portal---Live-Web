@@ -1,13 +1,4 @@
-"""Penyimpanan data META.PORTAL versi web (diperkeras).
-
-Perbedaan dari models.py desktop:
-- Tulis ke disk secara atomik (file sementara + os.replace) dan dikunci (thread + file lock),
-  jadi pembaca tidak pernah melihat file setengah jadi dan dua penulis tidak saling menimpa.
-- File JSON rusak TIDAK lagi dianggap kosong: dilempar StoreError, data tidak ditimpa.
-- Password dibatasi 6-128 karakter; iterasi PBKDF2 tersimpan per akun (akun lama otomatis di-upgrade saat login).
-- authenticate() tetap menjalankan hash untuk username yang tidak ada (waktu respons seragam).
-- reset_password() sengaja DIHAPUS: reset hanya dengan username/email = pengambilalihan akun.
-"""
+"""Penyimpanan data META.PORTAL versi web (diperkeras)."""
 from __future__ import annotations
 
 import hashlib
@@ -33,6 +24,8 @@ except ImportError:       # Windows
 
 USERNAME_RE = re.compile(r"[A-Za-z0-9_]{3,20}")
 EMAIL_RE = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
+ROOM_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,40}")
+RESERVED_USERNAMES = {"admin", "administrator", "root", "system", "moderator", "staff", "guest", "support"}
 MIN_PASSWORD_LEN, MAX_PASSWORD_LEN = 6, 128
 NEW_ITER = 600_000        # rekomendasi OWASP untuk PBKDF2-HMAC-SHA256
 LEGACY_ITER = 120_000     # akun lama yang belum punya field "iter"
@@ -66,7 +59,7 @@ def _file_lock(path: Path):
                 msvcrt.locking(fh.fileno(), msvcrt.LK_LOCK, 1)
                 locked = True
         except OSError:
-            pass          # tanpa kunci antarproses, kunci thread tetap berlaku
+            pass
         try:
             yield
         finally:
@@ -121,7 +114,6 @@ class _JsonStore:
 
     @contextmanager
     def _locked(self):
-        """Kunci eksklusif + muat ulang dari disk, supaya perubahan selalu berdasar data terbaru."""
         with _file_lock(self.path):
             self.data = self._load()
             yield
@@ -152,12 +144,14 @@ class UserStore(_JsonStore):
         username, email = username.strip(), email.strip()
         if not USERNAME_RE.fullmatch(username):
             return False, "Username 3-20 karakter: hanya huruf, angka, dan underscore."
+        if username.lower() in RESERVED_USERNAMES:
+            return False, "Username tersebut tidak tersedia."
         if not EMAIL_RE.fullmatch(email) or len(email) > 254:
             return False, "Format email tidak valid."
         if not self._pw_ok(password):
             return False, f"Password harus {MIN_PASSWORD_LEN}-{MAX_PASSWORD_LEN} karakter."
         salt = os.urandom(16)
-        digest = _hash(password, salt, NEW_ITER)          # hash di luar kunci (CPU berat)
+        digest = _hash(password, salt, NEW_ITER)
         key = username.lower()
         with self._locked():
             if key in self.data or any(u.get("email", "").lower() == email.lower() for u in self.data.values()):
@@ -182,7 +176,7 @@ class UserStore(_JsonStore):
         key = username.strip().lower()
         user = self.data.get(key)
         if user is None or not self._pw_ok_len(password):
-            _hash(password[:MAX_PASSWORD_LEN] or "x", _DUMMY_SALT, NEW_ITER)    # waktu respons seragam
+            _hash(password[:MAX_PASSWORD_LEN] or "x", _DUMMY_SALT, NEW_ITER)
             return False
         ok = self._verify(user, password)
         if ok and int(user.get("iter", LEGACY_ITER)) < NEW_ITER:
@@ -190,7 +184,6 @@ class UserStore(_JsonStore):
         return ok
 
     def _upgrade(self, key: str, password: str, old_hash: str) -> None:
-        """Hash ulang akun lama dengan iterasi baru (salt tetap)."""
         try:
             with self._locked():
                 user = self.data.get(key)
@@ -449,26 +442,63 @@ class PickemStore(_JsonStore):
             self._commit()
 
 
+# ----------------------------------------------------------------------------- live chat (per match room)
 class LiveChatStore(_JsonStore):
+    DEFAULT_ROOM = "blg-vs-tl"
+
     @staticmethod
-    def _defaults() -> list[dict]:
+    def _normalize_room(match_id: str | None) -> str:
+        if not match_id:
+            return LiveChatStore.DEFAULT_ROOM
+        cleaned = match_id.strip().lower()
+        if ROOM_ID_RE.fullmatch(cleaned):
+            return cleaned
+        return LiveChatStore.DEFAULT_ROOM
+
+    @staticmethod
+    def _defaults(room_id: str) -> list[dict]:
+        if room_id == LiveChatStore.DEFAULT_ROOM:
+            return [
+                {"id": "cmsg-1", "sender": "Connor", "msg": "When does Sentinel plays?", "time": "18:30"},
+                {"id": "cmsg-2", "sender": "Ikuyo Kita", "msg": "Can't wait for BLG stomp TL", "time": "18:31"},
+                {"id": "cmsg-3", "sender": "Goldship", "msg": "hey guys", "time": "18:32"},
+                {"id": "cmsg-4", "sender": "Gigguk", "msg": "What's your pred goldship?", "time": "18:33"},
+                {"id": "cmsg-5", "sender": "Kazuma", "msg": "is it just us in here?", "time": "18:34"},
+            ]
         return [
-            {"id": "cmsg-1", "sender": "Connor", "msg": "When does Sentinel plays?", "time": "18:30"},
-            {"id": "cmsg-2", "sender": "Ikuyo Kita", "msg": "Can't wait for BLG stomp TL", "time": "18:31"},
-            {"id": "cmsg-3", "sender": "Goldship", "msg": "hey guys", "time": "18:32"},
-            {"id": "cmsg-4", "sender": "Gigguk", "msg": "What's your pred goldship?", "time": "18:33"},
-            {"id": "cmsg-5", "sender": "Kazuma", "msg": "is it just us in here?", "time": "18:34"}
+            {
+                "id": f"cmsg-{uuid.uuid4().hex[:8]}",
+                "sender": "META Bot",
+                "msg": f"Selamat datang di Live Match Chat ({room_id.upper()})!",
+                "time": datetime.now().strftime("%H:%M"),
+            }
         ]
 
-    def _ensure_messages(self):
-        if "messages" not in self.data or not isinstance(self.data["messages"], list):
-            self.data["messages"] = self._defaults()
-            self._commit()
+    def _ensure_room(self, room_id: str) -> list[dict]:
+        dirty = False
+        if not isinstance(self.data.get("rooms"), dict):
+            self.data["rooms"] = {}
+            dirty = True
 
-    def get_messages(self, since_id: str | None = None, limit: int = 100) -> list[dict]:
+        # Migrasi otomatis jika masih ada struktur lama self.data["messages"]
+        if isinstance(self.data.get("messages"), list):
+            legacy_msgs = self.data.pop("messages")
+            if legacy_msgs and self.DEFAULT_ROOM not in self.data["rooms"]:
+                self.data["rooms"][self.DEFAULT_ROOM] = legacy_msgs
+            dirty = True
+
+        if room_id not in self.data["rooms"] or not isinstance(self.data["rooms"][room_id], list):
+            self.data["rooms"][room_id] = self._defaults(room_id)
+            dirty = True
+
+        if dirty:
+            self._commit()
+        return self.data["rooms"][room_id]
+
+    def get_messages(self, match_id: str | None = None, since_id: str | None = None, limit: int = 100) -> list[dict]:
+        room_id = self._normalize_room(match_id)
         with self._locked():
-            self._ensure_messages()
-            msgs = self.data.get("messages", [])
+            msgs = self._ensure_room(room_id)
             if not since_id:
                 return [dict(m) for m in msgs[-limit:]]
             idx = -1
@@ -479,22 +509,23 @@ class LiveChatStore(_JsonStore):
                 return [dict(m) for m in msgs[idx + 1:]]
             return [dict(m) for m in msgs[-limit:]]
 
-    def add_message(self, sender: str, msg: str) -> dict:
-        text = msg.strip()[:300]
-        if not text:
+    def add_message(self, sender: str, msg: str, match_id: str | None = None) -> dict:
+        room_id = self._normalize_room(match_id)
+        text_clean = msg.strip()[:300]
+        if not text_clean:
             raise ValueError("Pesan tidak boleh kosong.")
         now_str = datetime.now().strftime("%H:%M")
         msg_id = f"cmsg-{uuid.uuid4().hex[:8]}"
         new_msg = {
             "id": msg_id,
             "sender": sender.strip()[:30] or "Guest",
-            "msg": text,
-            "time": now_str
+            "msg": text_clean,
+            "time": now_str,
         }
         with self._locked():
-            self._ensure_messages()
-            self.data["messages"].append(new_msg)
-            if len(self.data["messages"]) > 500:
-                self.data["messages"] = self.data["messages"][-500:]
+            msgs = self._ensure_room(room_id)
+            msgs.append(new_msg)
+            if len(msgs) > 500:
+                self.data["rooms"][room_id] = msgs[-500:]
             self._commit()
             return dict(new_msg)

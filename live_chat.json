@@ -1,40 +1,66 @@
 {
-  "messages": [
-    {
-      "id": "cmsg-1",
-      "sender": "Connor",
-      "msg": "When does Sentinel plays?",
-      "time": "18:30"
-    },
-    {
-      "id": "cmsg-2",
-      "sender": "Ikuyo Kita",
-      "msg": "Can't wait for BLG stomp TL",
-      "time": "18:31"
-    },
-    {
-      "id": "cmsg-3",
-      "sender": "Goldship",
-      "msg": "hey guys",
-      "time": "18:32"
-    },
-    {
-      "id": "cmsg-4",
-      "sender": "Gigguk",
-      "msg": "What's your pred goldship?",
-      "time": "18:33"
-    },
-    {
-      "id": "cmsg-5",
-      "sender": "Kazuma",
-      "msg": "is it just us in here?",
-      "time": "18:34"
-    },
-    {
-      "id": "cmsg-a05bb307",
-      "sender": "niro",
-      "msg": "test",
-      "time": "21:31"
-    }
-  ]
+  "rooms": {
+    "blg-vs-tl": [
+      {
+        "id": "cmsg-1",
+        "sender": "Connor",
+        "msg": "When does Sentinel plays?",
+        "time": "18:30"
+      },
+      {
+        "id": "cmsg-2",
+        "sender": "Ikuyo Kita",
+        "msg": "Can't wait for BLG stomp TL",
+        "time": "18:31"
+      },
+      {
+        "id": "cmsg-3",
+        "sender": "Goldship",
+        "msg": "hey guys",
+        "time": "18:32"
+      },
+      {
+        "id": "cmsg-4",
+        "sender": "Gigguk",
+        "msg": "What's your pred goldship?",
+        "time": "18:33"
+      },
+      {
+        "id": "cmsg-5",
+        "sender": "Kazuma",
+        "msg": "is it just us in here?",
+        "time": "18:34"
+      },
+      {
+        "id": "cmsg-a05bb307",
+        "sender": "niro",
+        "msg": "test",
+        "time": "21:31"
+      }
+    ],
+    "m-up-2": [
+      {
+        "id": "cmsg-e32b1b02",
+        "sender": "META Bot",
+        "msg": "Selamat datang di Live Match Chat (M-UP-2)!",
+        "time": "00:58"
+      }
+    ],
+    "m-up-4": [
+      {
+        "id": "cmsg-35a6a894",
+        "sender": "META Bot",
+        "msg": "Selamat datang di Live Match Chat (M-UP-4)!",
+        "time": "00:59"
+      }
+    ],
+    "m-up-1": [
+      {
+        "id": "cmsg-c95604f8",
+        "sender": "META Bot",
+        "msg": "Selamat datang di Live Match Chat (M-UP-1)!",
+        "time": "00:59"
+      }
+    ]
+  }
 }

@@ -25,33 +25,48 @@
 
             <div class="video-match-overlay">
               <div class="overlay-match-item">
-                <span class="tag-game">GAME 1</span>
+                <span class="tag-game">{{ 'GAME 1' if watch_data.secondary_game else watch_data.status_text|upper }}</span>
                 <div class="overlay-teams">
-                  <span class="tag-team tag-team--blg">BLG <b>#CHINA1</b></span>
-                  <span class="tag-vs">vs</span>
-                  <span class="tag-team tag-team--tl">TL <b>#EMEA3</b></span>
+                  <span class="tag-team tag-team--blg">{{ watch_data.team_a_code }} <b>{{ watch_data.team_a_tag }}</b></span>
+                  <span class="tag-vs">
+                    {% if watch_data.score_a not in ('', '-') and watch_data.score_b not in ('', '-') %}
+                      {{ watch_data.score_a }} : {{ watch_data.score_b }}
+                    {% else %}
+                      vs
+                    {% endif %}
+                  </span>
+                  <span class="tag-team tag-team--tl">{{ watch_data.team_b_code }} <b>{{ watch_data.team_b_tag }}</b></span>
                 </div>
               </div>
 
+              {% if watch_data.secondary_game %}
               <div class="overlay-match-item" style="margin-top: 15px;">
                 <span class="tag-game">GAME 2</span>
                 <div class="overlay-teams">
-                  <span class="tag-team tag-team--rrq">RRQ <b>#PAC1</b></span>
+                  <span class="tag-team tag-team--rrq">{{ watch_data.secondary_game.team_a_code }} <b>{{ watch_data.secondary_game.team_a_tag }}</b></span>
                   <span class="tag-vs">vs</span>
-                  <span class="tag-team tag-team--t1">T1 <b>#PAC2</b></span>
+                  <span class="tag-team tag-team--t1">{{ watch_data.secondary_game.team_b_code }} <b>{{ watch_data.secondary_game.team_b_tag }}</b></span>
                 </div>
               </div>
+              {% else %}
+              <div class="overlay-match-item" style="margin-top: 15px;">
+                <span class="tag-game">{{ watch_data.tournament_name }}</span>
+                <div class="overlay-teams">
+                  <span class="tag-team">{{ watch_data.flag_a }} {{ watch_data.team_a_name }}</span>
+                  <span class="tag-vs">•</span>
+                  <span class="tag-team">{{ watch_data.flag_b }} {{ watch_data.team_b_name }}</span>
+                </div>
+              </div>
+              {% endif %}
             </div>
           </div>
 
           <div class="video-lower-lineup">
-            <div class="lineup-label">T1 TEAM LINEUP</div>
+            <div class="lineup-label">{{ watch_data.lineup_team_name }}</div>
             <div class="lineup-players">
-              <span class="lineup-item">CARPE</span>
-              <span class="lineup-item">IZU</span>
-              <span class="lineup-item">KDG</span>
-              <span class="lineup-item">METEOR</span>
-              <span class="lineup-item">MUNCHKIN</span>
+              {% for player_name in watch_data.lineup_players %}
+              <span class="lineup-item">{{ player_name }}</span>
+              {% endfor %}
             </div>
           </div>
         </div>
@@ -59,15 +74,15 @@
 
       <!-- Quick Platform Stream Buttons -->
       <div class="watch-external-platforms">
-        <a href="https://www.youtube.com/@VALORANTChampionsTour" target="_blank" class="platform-btn platform-btn--yt">
+        <a href="https://www.youtube.com/@VALORANTChampionsTour" target="_blank" rel="noopener noreferrer" class="platform-btn platform-btn--yt">
           <span class="platform-icon">▶</span>
           <span>VALORANT Champions Tour</span>
         </a>
-        <a href="https://www.tiktok.com/@valorantesports" target="_blank" class="platform-btn platform-btn--tt">
+        <a href="https://www.tiktok.com/@valorantesports" target="_blank" rel="noopener noreferrer" class="platform-btn platform-btn--tt">
           <span class="platform-icon">♪</span>
           <span>VALORANT Champions Tour</span>
         </a>
-        <a href="https://www.twitch.tv/valorant" target="_blank" class="platform-btn platform-btn--tw">
+        <a href="https://www.twitch.tv/valorant" target="_blank" rel="noopener noreferrer" class="platform-btn platform-btn--tw">
           <span class="platform-icon">⚲</span>
           <span>VALORANT Champions Tour</span>
         </a>
@@ -79,7 +94,7 @@
       <div class="chat-container">
         <div class="chat-header">
           <span class="chat-title">Live Match Chat</span>
-          <span class="chat-live-indicator">● LIVE</span>
+          <span class="chat-live-indicator">● {{ 'LIVE' if watch_data.status_type == 'live' else 'ROOM' }}</span>
         </div>
 
         <div class="chat-messages-area" id="chatMessagesArea">
@@ -109,13 +124,13 @@
 </div>
 
 <script>
-const CSRF_TOKEN = "{{ csrf_token() }}";
-const CURRENT_USER = "{{ user or '' }}";
+const CSRF_TOKEN = {{ csrf_token() | tojson }};
+const CURRENT_USER = {{ (user or '') | tojson }};
+const MATCH_ID = {{ (watch_data.id or 'blg-vs-tl') | tojson }};
 let lastMsgId = null;
 let isPolling = false;
 let isSending = false;
 
-// Inisialisasi lastMsgId dari render awal server
 (function initChat() {
   const area = document.getElementById('chatMessagesArea');
   if (area) {
@@ -182,8 +197,9 @@ async function fetchNewMessages() {
   if (isPolling) return;
   isPolling = true;
   try {
-    const url = lastMsgId ? `/api/chat/messages?since=${encodeURIComponent(lastMsgId)}` : '/api/chat/messages';
-    const res = await fetch(url, {
+    const params = new URLSearchParams({ match_id: MATCH_ID });
+    if (lastMsgId) params.set('since', lastMsgId);
+    const res = await fetch(`/api/chat/messages?${params.toString()}`, {
       headers: { 'Accept': 'application/json' }
     });
     if (res.ok) {
@@ -193,13 +209,12 @@ async function fetchNewMessages() {
       }
     }
   } catch (err) {
-    // Polling background silent fail
+    // Silent background polling
   } finally {
     isPolling = false;
   }
 }
 
-// Polling interval 2.5 detik untuk sinkronisasi live real-time
 setInterval(fetchNewMessages, 2500);
 
 async function sendChatMessage() {
@@ -219,7 +234,7 @@ async function sendChatMessage() {
         'Content-Type': 'application/json',
         'X-CSRF-Token': CSRF_TOKEN
       },
-      body: JSON.stringify({ msg: val })
+      body: JSON.stringify({ match_id: MATCH_ID, msg: val })
     });
     const data = await res.json();
     if (data.ok && data.message) {
