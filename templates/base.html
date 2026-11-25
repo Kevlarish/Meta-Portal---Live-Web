@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+  <title>META.PORTAL</title>
+  <!-- Google Fonts matching init_fonts() candidates -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Oswald:wght@300;400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+{% if user %}
+<script>
+// Restrict backward & forward action from throwing logged-in user back to login page
+(function() {
+  if (window.history && window.history.pushState) {
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", function(event) {
+      window.history.pushState(null, "", window.location.href);
+    });
+  }
+})();
+</script>
+{% endif %}
+
+
+<!-- ==================== NAVBAR ==================== -->
+<nav class="navbar">
+  <div class="navbar__logo" onclick="handleLogoClick()">META</div>
+
+  <div class="navbar__search">
+    <input type="text" placeholder="Search...." id="navSearchInput" onkeydown="handleSearchKey(event)">
+  </div>
+
+  <div class="navbar__items">
+    <a class="navbar__item{% if request.path.startswith('/forum') %} active{% endif %}" href="/forum">Forum</a>
+    <a class="navbar__item{% if request.path.startswith('/matches') or request.path.startswith('/match') or request.path.startswith('/watch') %} active{% endif %}" href="/matches">Matches</a>
+    <a class="navbar__item{% if request.path.startswith('/stats') %} active{% endif %}" href="/stats">Stats</a>
+  </div>
+
+  <div class="navbar__right">
+    {% if user %}
+    <div class="navbar__user-info">
+      <span class="navbar__user-name">{{ user }}</span>
+      <a class="navbar__logout" href="#" onclick="return submitLogout(event)">Logout</a>
+    </div>
+    {% endif %}
+
+    <!-- User icon -->
+    <span class="navbar__icon" onclick="handleUserIconClick()" title="Profile">
+      <svg viewBox="0 0 120 120" fill="none">
+        <circle cx="60" cy="60" r="54" stroke="#fff" stroke-width="8"/>
+        <circle cx="60" cy="48" r="16" fill="#fff"/>
+        <ellipse cx="60" cy="90" rx="27" ry="26" fill="#fff" clip-path="inset(0 0 30% 0 round 0)"/>
+      </svg>
+    </span>
+
+    <!-- Mail icon -->
+    <span class="navbar__icon" onclick="handleMailIconClick()" title="Messages">
+      <svg viewBox="0 0 120 120" fill="none">
+        <rect x="5" y="24" width="110" height="72" rx="11" fill="#fff"/>
+        <polyline points="14,36 60,70 106,36" stroke="#586878" stroke-width="6" fill="none" stroke-linejoin="round"/>
+      </svg>
+    </span>
+
+    <!-- Menu icon -->
+    <span class="navbar__icon" id="hamburgerBtn" onclick="toggleHamburgerMenu(event)" title="Menu">
+      <svg viewBox="0 0 120 120" fill="none">
+        <rect x="12" y="30" width="96" height="8" rx="4" fill="#fff"/>
+        <rect x="12" y="56" width="96" height="8" rx="4" fill="#fff"/>
+        <rect x="12" y="82" width="96" height="8" rx="4" fill="#fff"/>
+      </svg>
+    </span>
+
+    <!-- Hamburger Dropdown Menu -->
+    <div class="hamburger-dropdown" id="hamburgerDropdown">
+      {% if user %}
+      <a class="hamburger-dropdown__item" href="/home">Home</a>
+      <a class="hamburger-dropdown__item" href="/matches">Matches</a>
+      <a class="hamburger-dropdown__item" href="/stats">Stats</a>
+      <a class="hamburger-dropdown__item" href="/forum">Forum</a>
+      <div class="hamburger-dropdown__item" onclick="openProfileModal(); closeHamburger();">Profil Akun</div>
+      <div class="hamburger-dropdown__item" onclick="openMessagesModal(); closeHamburger();">Kotak Pesan</div>
+      <div class="hamburger-dropdown__sep"></div>
+      <a class="hamburger-dropdown__item" href="#" onclick="return submitLogout(event)">Logout ({{ user }})</a>
+      {% else %}
+      <a class="hamburger-dropdown__item" href="/login">Login</a>
+      <a class="hamburger-dropdown__item" href="/register">Register</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- ==================== FLASH MESSAGES ==================== -->
+{% with msgs = get_flashed_messages(with_categories=true) %}
+{% if msgs %}
+<div class="flash-container">
+  {% for cat, m in msgs %}
+  <div class="flash {{ cat }}">{{ m }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+{% block body %}{% endblock %}
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- 1. Info / Dialog Modal (Desktop messagebox.showinfo style) -->
+<div class="meta-modal-overlay" id="infoModalOverlay" onclick="closeInfoModal(event)">
+  <div class="meta-modal info-modal" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeInfoModal()">✕</button>
+    <div class="info-modal__header">
+      <span class="info-modal__title" id="infoModalTitle">Pemberitahuan</span>
+    </div>
+    <div class="info-modal__body" id="infoModalBody">
+      Pesan informasi.
+    </div>
+    <div class="info-modal__footer">
+      <button class="info-modal__btn" onclick="closeInfoModal()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Profile Modal (Desktop ProfileModal style) -->
+<div class="meta-modal-overlay" id="profileModalOverlay" onclick="closeProfileModal(event)">
+  <div class="meta-modal profile-modal" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeProfileModal()">✕</button>
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatarBadge">ME</div>
+      <div class="profile-user-info">
+        <span class="profile-username" id="profileHeaderUsername">{{ user or 'Guest' }}</span>
+        <span class="profile-role-badge">MEMBER AKTIF</span>
+      </div>
+    </div>
+    <div class="modal-tabview">
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" id="tabBtnInfo" onclick="switchProfileTab('info')">Informasi Akun</button>
+        <button class="modal-tab-btn" id="tabBtnSec" onclick="switchProfileTab('sec')">Ganti Password</button>
+      </div>
+
+      <!-- Tab 1: Info Akun -->
+      <div class="modal-tab-pane active" id="tabPaneInfo">
+        <div class="modal-field-group">
+          <label class="modal-label">Username</label>
+          <input class="modal-input" id="profileUnameInput" value="{{ user or '' }}" readonly>
+        </div>
+        <div class="modal-field-group">
+          <label class="modal-label">Email</label>
+          <input class="modal-input" id="profileEmailInput" type="email" placeholder="email@domain.com">
+        </div>
+        <div class="modal-field-group">
+          <label class="modal-label">Tim Favorit</label>
+          <select class="modal-select" id="profileTeamSelect" onchange="onProfileTeamChange(this.value)">
+            <option value="None">None</option>
+            <option value="AG">AG</option>
+            <option value="BLG">BLG</option>
+            <option value="C9">C9</option>
+            <option value="EDG">EDG</option>
+            <option value="FPX">FPX</option>
+            <option value="GEN">GEN</option>
+            <option value="NRG">NRG</option>
+            <option value="PRX">PRX</option>
+            <option value="RRQ">RRQ</option>
+            <option value="T1">T1</option>
+            <option value="TL">TL</option>
+            <option value="VIT">VIT</option>
+            <option value="VKS">VKS</option>
+            <option value="WOL">WOL</option>
+          </select>
+        </div>
+        <div class="modal-field-group">
+          <label class="modal-label">Konfirmasi Password untuk Mengubah Data</label>
+          <input class="modal-input" id="profileConfirmPwdInput" type="password" placeholder="Wajib untuk konfirmasi perubahan">
+        </div>
+        <span class="modal-info-text" id="profileRegisteredText">Terdaftar sejak: October 2026</span>
+        <button class="modal-primary-btn" onclick="saveProfileChanges()">Simpan Perubahan</button>
+      </div>
+
+      <!-- Tab 2: Ganti Password -->
+      <div class="modal-tab-pane" id="tabPaneSec">
+        <div class="modal-field-group">
+          <label class="modal-label">Password Saat Ini</label>
+          <input class="modal-input" id="pwdOldInput" type="password">
+        </div>
+        <div class="modal-field-group">
+          <label class="modal-label">Password Baru (min. 6 karakter)</label>
+          <input class="modal-input" id="pwdNewInput" type="password">
+        </div>
+        <div class="modal-field-group">
+          <label class="modal-label">Konfirmasi Password Baru</label>
+          <input class="modal-input" id="pwdConfirmInput" type="password">
+        </div>
+        <button class="modal-primary-btn" onclick="updateUserPassword()">Perbarui Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Messages Modal (Desktop MessagesModal style) -->
+<div class="meta-modal-overlay" id="messagesModalOverlay" onclick="closeMessagesModal(event)">
+  <div class="meta-modal messages-modal" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeMessagesModal()">✕</button>
+    <div class="messages-header">
+      <div class="messages-header-icon">✉</div>
+      <div class="messages-header-text">
+        <span class="messages-title">Pusat Pesan & Notifikasi</span>
+        <span class="messages-summary" id="messagesSummaryText">0 pesan belum dibaca dari total 0 pesan.</span>
+      </div>
+      <button class="messages-mark-all-btn" onclick="markAllMessagesRead()">Tandai Semua Dibaca</button>
+    </div>
+
+    <div class="messages-body">
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" id="msgTabAll" onclick="switchMessagesTab('all')">Semua Pesan</button>
+        <button class="modal-tab-btn" id="msgTabUnread" onclick="switchMessagesTab('unread')">Belum Dibaca</button>
+        <button class="modal-tab-btn" id="msgTabRead" onclick="switchMessagesTab('read')">Sudah Dibaca</button>
+      </div>
+      <div class="messages-list" id="messagesListContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+const CURRENT_USER = {{ (user or '')|tojson }};
+const IS_LOGGED_IN = {{ 'true' if user else 'false' }};
+const CSRF_TOKEN = {{ csrf_token()|tojson }};
+const TEAM_COLORS = {
+  "BLG": "#2f6fe0", "TL": "#17358a", "RRQ": "#e8801f", "T1": "#d4202f",
+  "C9": "#2aa6e0", "PRX": "#c01b2e", "VIT": "#f2c200", "NRG": "#e4402a",
+  "WOL": "#f0a000", "EDG": "#6b7078", "FPX": "#c0222b", "AG": "#d8203c",
+  "VKS": "#3a3f46", "GEN": "#c79a2b"
+};
+
+/* --- Helper aman: panggilan API (CSRF) dan pembuat elemen (tanpa HTML mentah) --- */
+async function api(method, url, body) {
+  const opts = { method: method, cache: 'no-store', credentials: 'same-origin',
+                 headers: { 'X-CSRF-Token': CSRF_TOKEN, 'Accept': 'application/json' } };
+  if (body !== undefined) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  let res;
+  try { res = await fetch(url, opts); }
+  catch (e) { return { ok: false, message: 'Tidak dapat terhubung ke server.' }; }
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  if (res.status === 401) { window.location.href = '/login'; return { ok: false, message: 'Sesi berakhir.' }; }
+  data.ok = res.ok && data.ok !== false;
+  if (!data.ok && !data.message) data.message = 'Permintaan gagal (' + res.status + ').';
+  return data;
+}
+
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined && text !== null) n.textContent = text;
+  return n;
+}
+
+function submitLogout(e) {
+  if (e) e.preventDefault();
+  const f = document.createElement('form');
+  f.method = 'post'; f.action = '/logout';
+  const i = document.createElement('input');
+  i.type = 'hidden'; i.name = 'csrf_token'; i.value = CSRF_TOKEN;
+  f.appendChild(i);
+  document.body.appendChild(f);
+  f.submit();
+  return false;
+}
+
+/* --- Global Navbar Handlers --- */
+function toggleHamburgerMenu(e) {
+  e.stopPropagation();
+  const dropdown = document.getElementById('hamburgerDropdown');
+  if (dropdown) dropdown.classList.toggle('open');
+}
+function closeHamburger() {
+  const dropdown = document.getElementById('hamburgerDropdown');
+  if (dropdown) dropdown.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('hamburgerDropdown');
+  const btn = document.getElementById('hamburgerBtn');
+  if (dropdown && !dropdown.contains(e.target) && (!btn || !btn.contains(e.target))) {
+    dropdown.classList.remove('open');
+  }
+});
+
+function handleLogoClick() {
+  if (IS_LOGGED_IN) {
+    window.location.href = '/home';
+  } else {
+    showInfoModal("Akses Ditolak", "Silakan login terlebih dahulu untuk mengakses halaman utama.", function() {
+      window.location.href = '/login';
+    });
+  }
+}
+
+function handleUserIconClick() {
+  if (IS_LOGGED_IN) {
+    openProfileModal();
+  } else {
+    window.location.href = '/login';
+  }
+}
+
+function handleMailIconClick() {
+  if (IS_LOGGED_IN) {
+    openMessagesModal();
+  } else {
+    showInfoModal("Akses Ditolak", "Silakan login terlebih dahulu untuk melihat pesan.", function() {
+      window.location.href = '/login';
+    });
+  }
+}
+
+function openNavNotice(pageName) {
+  showInfoModal(pageName, `Halaman '${pageName}' belum diimplementasikan pada prototipe ini.`);
+}
+
+function handleSearchKey(e) {
+  if (e.key === 'Enter') {
+    const val = e.target.value.trim();
+    if (val) {
+      window.location.href = '/search?q=' + encodeURIComponent(val);
+    }
+  }
+}
+
+/* --- Info Modal (messagebox) --- */
+let infoCallback = null;
+function showInfoModal(title, message, cb) {
+  document.getElementById('infoModalTitle').textContent = title;
+  document.getElementById('infoModalBody').textContent = message;
+  infoCallback = cb || null;
+  const ov = document.getElementById('infoModalOverlay');
+  ov.style.zIndex = 10001;   // selalu di atas modal profil/pesan (sebelumnya tertutup)
+  ov.classList.add('open');
+}
+function closeInfoModal(e) {
+  if (e && e.target !== document.getElementById('infoModalOverlay') && e.target.tagName !== 'BUTTON') return;
+  document.getElementById('infoModalOverlay').classList.remove('open');
+  if (infoCallback) {
+    const cb = infoCallback;
+    infoCallback = null;
+    cb();
+  }
+}
+
+/* --- Profile Modal (data dari server) --- */
+function updateAvatarBadge(code) {
+  const badge = document.getElementById('profileAvatarBadge');
+  if (!badge) return;
+  const text = (code && code !== 'None') ? code : (CURRENT_USER.slice(0, 2).toUpperCase() || 'ME');
+  badge.textContent = text;
+  const color = TEAM_COLORS[code] || '#5a6670';
+  badge.style.background = color;
+  if (color === '#f2c200' || color === '#f0a000') {
+    badge.classList.add('profile-avatar--dark-text');
+  } else {
+    badge.classList.remove('profile-avatar--dark-text');
+  }
+}
+
+function onProfileTeamChange(val) {
+  updateAvatarBadge(val);
+}
+
+async function openProfileModal() {
+  if (!IS_LOGGED_IN) {
+    showInfoModal("Akses Ditolak", "Silakan login terlebih dahulu untuk mengakses profil akun.", function() {
+      window.location.href = '/login';
+    });
+    return;
+  }
+  if (!IS_LOGGED_IN) return;
+  const p = await api('GET', '/api/profile');
+  if (!p.ok) { showInfoModal("Profil", p.message); return; }
+  document.getElementById('profileHeaderUsername').textContent = p.username;
+  document.getElementById('profileUnameInput').value = p.username;
+  document.getElementById('profileEmailInput').value = p.email || '';
+  document.getElementById('profileTeamSelect').value = p.favorite_team || 'None';
+  document.getElementById('profileConfirmPwdInput').value = '';
+  document.getElementById('profileRegisteredText').textContent = 'Terdaftar sejak: ' + (p.created_at || '-');
+  updateAvatarBadge(p.favorite_team);
+  switchProfileTab('info');
+  document.getElementById('profileModalOverlay').classList.add('open');
+}
+
+function closeProfileModal(e) {
+  if (e && e.target !== document.getElementById('profileModalOverlay') && !e.target.classList.contains('modal-close-btn')) return;
+  document.getElementById('profileModalOverlay').classList.remove('open');
+}
+
+function switchProfileTab(tab) {
+  const isInfo = (tab === 'info');
+  document.getElementById('tabBtnInfo').classList.toggle('active', isInfo);
+  document.getElementById('tabBtnSec').classList.toggle('active', !isInfo);
+  document.getElementById('tabPaneInfo').classList.toggle('active', isInfo);
+  document.getElementById('tabPaneSec').classList.toggle('active', !isInfo);
+}
+
+async function saveProfileChanges() {
+  const pwd = document.getElementById('profileConfirmPwdInput').value;
+  if (!pwd) {
+    showInfoModal("Simpan Profil", "Masukkan password Anda untuk konfirmasi perubahan.");
+    return;
+  }
+  const r = await api('POST', '/api/profile/update', {
+    email: document.getElementById('profileEmailInput').value.trim(),
+    favorite_team: document.getElementById('profileTeamSelect').value,
+    password: pwd
+  });
+  document.getElementById('profileConfirmPwdInput').value = '';
+  showInfoModal(r.ok ? "Profil" : "Simpan Profil", r.message || (r.ok ? "Profil berhasil diperbarui!" : "Gagal."));
+}
+
+async function updateUserPassword() {
+  const oldP = document.getElementById('pwdOldInput').value;
+  const newP = document.getElementById('pwdNewInput').value;
+  const confP = document.getElementById('pwdConfirmInput').value;
+  if (!oldP || !newP || !confP) {
+    showInfoModal("Ganti Password", "Semua kolom wajib diisi.");
+    return;
+  }
+  if (newP.length < 6 || newP.length > 128) {
+    showInfoModal("Ganti Password", "Password baru harus 6-128 karakter.");
+    return;
+  }
+  if (newP !== confP) {
+    showInfoModal("Ganti Password", "Konfirmasi password baru tidak sama.");
+    return;
+  }
+  const r = await api('POST', '/api/profile/password', { old: oldP, new: newP, confirm: confP });
+  if (r.ok) {
+    document.getElementById('pwdOldInput').value = '';
+    document.getElementById('pwdNewInput').value = '';
+    document.getElementById('pwdConfirmInput').value = '';
+  }
+  showInfoModal("Ganti Password", r.message || (r.ok ? "Password berhasil diperbarui!" : "Gagal."));
+}
+
+/* --- Messages Modal (data dari server, dirender tanpa HTML mentah) --- */
+let activeMsgTab = 'all';
+let messagesCache = [];
+
+async function loadMessages() {
+  const r = await api('GET', '/api/messages');
+  if (r.ok) messagesCache = Array.isArray(r.messages) ? r.messages : [];
+  return r;
+}
+
+async function openMessagesModal() {
+  if (!IS_LOGGED_IN) return;
+  const r = await loadMessages();
+  if (!r.ok) { showInfoModal("Pesan", r.message); return; }
+  renderMessages();
+  document.getElementById('messagesModalOverlay').classList.add('open');
+}
+
+function closeMessagesModal(e) {
+  if (e && e.target !== document.getElementById('messagesModalOverlay') && !e.target.classList.contains('modal-close-btn')) return;
+  document.getElementById('messagesModalOverlay').classList.remove('open');
+}
+
+function switchMessagesTab(tab) {
+  activeMsgTab = tab;
+  document.getElementById('msgTabAll').classList.toggle('active', tab === 'all');
+  document.getElementById('msgTabUnread').classList.toggle('active', tab === 'unread');
+  document.getElementById('msgTabRead').classList.toggle('active', tab === 'read');
+  renderMessages();
+}
+
+function renderMessages() {
+  const msgs = messagesCache;
+  const unreadCount = msgs.filter(m => !m.read).length;
+  document.getElementById('messagesSummaryText').textContent =
+    `${unreadCount} pesan belum dibaca dari total ${msgs.length} pesan.`;
+
+  let filtered = msgs;
+  let emptyMsg = "Belum ada pesan yang tersimpan.";
+  if (activeMsgTab === 'unread') {
+    filtered = msgs.filter(m => !m.read);
+    emptyMsg = "Tidak ada pesan baru yang belum dibaca.";
+  } else if (activeMsgTab === 'read') {
+    filtered = msgs.filter(m => m.read);
+    emptyMsg = "Belum ada riwayat pesan yang sudah dibaca.";
+  }
+
+  const container = document.getElementById('messagesListContainer');
+  container.replaceChildren();
+
+  if (filtered.length === 0) {
+    const empty = el('div', 'msg-empty');
+    empty.appendChild(el('span', 'msg-empty__icon', '📭'));
+    empty.appendChild(el('span', 'msg-empty__text', emptyMsg));
+    container.appendChild(empty);
+    return;
+  }
+
+  filtered.forEach(m => {
+    const isRead = !!m.read;
+    const card = el('div', 'msg-card ' + (isRead ? 'msg-card--read' : 'msg-card--unread'));
+
+    const top = el('div', 'msg-card__top');
+    top.appendChild(el('span', 'msg-card__status ' + (isRead ? 'msg-card__status--read' : 'msg-card__status--new'),
+                       isRead ? 'SUDAH DIBACA' : '● BARU'));
+    top.appendChild(el('span', 'msg-card__cat', m.category || 'General'));
+    top.appendChild(el('span', 'msg-card__date', m.date || ''));
+    card.appendChild(top);
+
+    card.appendChild(el('div', 'msg-card__title' + (!isRead ? ' msg-card__title--bold' : ''), m.title || ''));
+    card.appendChild(el('div', 'msg-card__sender', 'Dari: ' + (m.sender || 'System')));
+    card.appendChild(el('div', 'msg-card__body', m.body || ''));
+
+    const actions = el('div', 'msg-card__actions');
+    const bRead = el('button', 'msg-btn-read ' + (isRead ? 'msg-btn-read--read' : 'msg-btn-read--unread'),
+                     isRead ? 'Tandai Belum Dibaca' : 'Tandai Sudah Dibaca');
+    bRead.type = 'button';
+    bRead.addEventListener('click', () => toggleMessageRead(m.id));
+    const bDel = el('button', 'msg-btn-del', 'Hapus');
+    bDel.type = 'button';
+    bDel.addEventListener('click', () => deleteMessageItem(m.id));
+    actions.appendChild(bRead);
+    actions.appendChild(bDel);
+    card.appendChild(actions);
+
+    container.appendChild(card);
+  });
+}
+
+async function refreshMessagesAfter(r) {
+  if (!r.ok) { showInfoModal("Pesan", r.message); return; }
+  await loadMessages();
+  renderMessages();
+}
+
+async function toggleMessageRead(id) {
+  const m = messagesCache.find(x => x.id === id);
+  if (!m) return;
+  await refreshMessagesAfter(await api('POST', '/api/messages/' + encodeURIComponent(id) + '/read', { read: !m.read }));
+}
+
+async function markAllMessagesRead() {
+  await refreshMessagesAfter(await api('POST', '/api/messages/read-all', {}));
+}
+
+async function deleteMessageItem(id) {
+  await refreshMessagesAfter(await api('DELETE', '/api/messages/' + encodeURIComponent(id)));
+}
+
+/* --- Lupa password: reset mandiri dinonaktifkan di versi web (reset tanpa verifikasi = pengambilalihan akun) --- */
+function openResetPasswordModal() {
+  showInfoModal("Lupa Password",
+    "Reset password mandiri belum tersedia di versi web demi keamanan akun. Hubungi admin untuk mereset password Anda.");
+}
+
+/* --- Session Heartbeat & Idle Timeout (LMS Style) --- */
+if (IS_LOGGED_IN) {
+  const CHECK_INTERVAL_MS = 15000; // Cek ke server setiap 15 detik
+  const IDLE_LIMIT_MS = 15 * 60 * 1000; // 15 menit tanpa interaksi pengguna
+  let lastInteraction = Date.now();
+  let sessionExpiredHandled = false;
+
+  ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach((evt) => {
+    document.addEventListener(evt, () => {
+      lastInteraction = Date.now();
+    }, { passive: true });
+  });
+
+  const sessionTimer = setInterval(async () => {
+    if (sessionExpiredHandled) return;
+
+    // 1. Cek idle timeout di browser
+    if (Date.now() - lastInteraction > IDLE_LIMIT_MS) {
+      sessionExpiredHandled = true;
+      clearInterval(sessionTimer);
+      showInfoModal("Sesi Berakhir", "Sesi Anda telah berakhir karena tidak ada aktivitas selama 15 menit.", function() {
+        submitLogout();
+      });
+      return;
+    }
+
+    // 2. Cek keaktifan akun & validitas sesi via server
+    try {
+      const res = await fetch("/api/session-check", { cache: "no-store" });
+      if (!res.ok) {
+        sessionExpiredHandled = true;
+        clearInterval(sessionTimer);
+        const data = await res.json().catch(() => ({}));
+        let msg = "Sesi login Anda telah berakhir. Silakan login kembali.";
+        if (data.reason === "deleted") {
+          msg = "Akun Anda sudah tidak aktif atau telah dihapus.";
+        } else if (data.reason === "credentials_changed") {
+          msg = "Kredensial akun telah berubah. Silakan login kembali.";
+        }
+        showInfoModal("Sesi Berakhir", msg, function() {
+          window.location.href = "/login";
+        });
+      }
+    } catch (err) {
+      // Abaikan gangguan jaringan sementara
+    }
+  }, CHECK_INTERVAL_MS);
+}
+</script>
+
+
+</body>
+</html>

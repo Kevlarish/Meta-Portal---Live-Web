@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container match-detail-page">
+
+  <!-- Header Banner Card -->
+  <div class="match-score-card">
+    <div class="match-score-header">
+      <div class="event-brand">
+        <span class="event-icon-star">✦</span>
+        <div class="event-title-block">
+          <div class="event-name">{{ match.event }}</div>
+          <div class="event-sub">{{ match.stage }}</div>
+        </div>
+      </div>
+      <div class="event-date-text">{{ match.datetime }}</div>
+    </div>
+
+    <div class="match-teams-scoreline">
+      <div class="team-side team-side--left">
+        <div class="team-symbol" style="color: {{ match.team_a.logo_color }}">{{ match.team_a.code }}</div>
+        <div class="team-label">{{ match.team_a.name }}</div>
+      </div>
+
+      <div class="score-center-block">
+        <span class="score-num {% if match.team_a.score > match.team_b.score %}score-win{% endif %}">{{ match.team_a.score }}</span>
+        <span class="score-dash">-</span>
+        <span class="score-num {% if match.team_b.score > match.team_a.score %}score-win{% endif %}">{{ match.team_b.score }}</span>
+        <div class="match-format-tag">{{ match.format }}</div>
+      </div>
+
+      <div class="team-side team-side--right">
+        <div class="team-label">{{ match.team_b.name }}</div>
+        <a href="/team/prx" class="team-symbol-link">
+          <div class="team-symbol" style="color: {{ match.team_b.logo_color }}">{{ match.team_b.code }}</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Media Row: Stream & VODs -->
+  <div class="media-boxes-row">
+    <!-- Stream Panel -->
+    <div class="media-box media-box--stream">
+      <div class="box-title">STREAM</div>
+      <div class="stream-buttons-grid">
+        <a href="https://www.youtube.com/@VALORANTChampionsTour" target="_blank" class="stream-btn stream-btn--yt">
+          <span class="btn-icon">▶</span>
+          <span>VALORANT Champions Tour</span>
+        </a>
+        <a href="https://www.tiktok.com/@valorantesports" target="_blank" class="stream-btn stream-btn--tt">
+          <span class="btn-icon">♪</span>
+          <span>VALORANT Champions Tour</span>
+        </a>
+        <a href="https://www.twitch.tv/valorant" target="_blank" class="stream-btn stream-btn--tw">
+          <span class="btn-icon">⚲</span>
+          <span>VALORANT Champions Tour</span>
+        </a>
+        <a href="/watch" class="stream-btn stream-btn--watch">
+          <span>Watch Here (Live Player)</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- VODs Panel -->
+    <div class="media-box media-box--vods">
+      <div class="box-title">VODS</div>
+      <div class="vods-buttons-list">
+        {% for v in match.vods %}
+        <button type="button" class="vod-btn" onclick="showInfoModal('VOD Replay', 'Memuat video tayangan ulang {{ v.map }}...')">
+          <span class="vod-play-icon">▶</span>
+          <span>{{ v.map }}</span>
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Maps & Player Stats Panel -->
+  <div class="stats-panel-card">
+    <div class="stats-card-heading">MAPS/STATS</div>
+
+    <!-- Map Filter Tabs -->
+    <div class="maps-tabs-group">
+      {% for m in match.maps %}
+      <button type="button" class="map-tab-btn {% if loop.first %}active{% endif %}" onclick="switchMapStats('{{ m }}', this)">
+        {{ m }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Tables Container -->
+    <div class="player-stats-tables" id="statsTableContainer">
+      <!-- Team B (Paper Rex - Winner) -->
+      <div class="team-stats-group">
+        <table class="match-stats-table">
+          <thead>
+            <tr>
+              <th class="th-player">Player</th>
+              <th>R</th>
+              <th>ACS</th>
+              <th>K</th>
+              <th>D</th>
+              <th>A</th>
+              <th>+/-</th>
+              <th>HS%</th>
+              <th>FK</th>
+              <th>FD</th>
+              <th>+/-</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in match.player_stats['All']['prx'] %}
+            <tr>
+              <td class="td-player">
+                <span class="p-flag">{{ p.flag }}</span>
+                {% if p.name == 'f0rsakeN' %}
+                <a href="/player/f0rsaken" class="p-name p-name--link">{{ p.name }}</a>
+                {% else %}
+                <span class="p-name">{{ p.name }}</span>
+                {% endif %}
+                <span class="p-team">{{ p.team }}</span>
+              </td>
+              <td class="stat-highlight">{{ p.r }}</td>
+              <td>{{ p.acs }}</td>
+              <td>{{ p.k }}</td>
+              <td>{{ p.d }}</td>
+              <td>{{ p.a }}</td>
+              <td class="{% if p.diff.startswith('+') %}val-pos{% elif p.diff.startswith('-') %}val-neg{% endif %}">{{ p.diff }}</td>
+              <td>{{ p.hs }}</td>
+              <td>{{ p.fk }}</td>
+              <td>{{ p.fd }}</td>
+              <td class="{% if p.fk_diff.startswith('+') %}val-pos{% elif p.fk_diff.startswith('-') %}val-neg{% endif %}">{{ p.fk_diff }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Team A (T1) -->
+      <div class="team-stats-group" style="margin-top: 20px;">
+        <table class="match-stats-table">
+          <thead>
+            <tr>
+              <th class="th-player">Player</th>
+              <th>R</th>
+              <th>ACS</th>
+              <th>K</th>
+              <th>D</th>
+              <th>A</th>
+              <th>+/-</th>
+              <th>HS%</th>
+              <th>FK</th>
+              <th>FD</th>
+              <th>+/-</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in match.player_stats['All']['t1'] %}
+            <tr>
+              <td class="td-player">
+                <span class="p-flag">{{ p.flag }}</span>
+                <span class="p-name">{{ p.name }}</span>
+                <span class="p-team">{{ p.team }}</span>
+              </td>
+              <td class="stat-highlight">{{ p.r }}</td>
+              <td>{{ p.acs }}</td>
+              <td>{{ p.k }}</td>
+              <td>{{ p.d }}</td>
+              <td>{{ p.a }}</td>
+              <td class="{% if p.diff.startswith('+') %}val-pos{% elif p.diff.startswith('-') %}val-neg{% endif %}">{{ p.diff }}</td>
+              <td>{{ p.hs }}</td>
+              <td>{{ p.fk }}</td>
+              <td>{{ p.fd }}</td>
+              <td class="{% if p.fk_diff.startswith('+') %}val-pos{% elif p.fk_diff.startswith('-') %}val-neg{% endif %}">{{ p.fk_diff }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchMapStats(mapName, btn) {
+  document.querySelectorAll('.map-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showInfoModal("Map Stats Filter", "Menampilkan statistik performa untuk map: " + mapName);
+}
+</script>
+
+{% endblock %}

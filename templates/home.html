@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="home-wrapper">
+  <!-- ========== LEFT COLUMN ========== -->
+  <div class="home-left">
+
+    <div class="home-welcome">
+      <span class="home-welcome__text">Selamat datang, {{ user }}</span>
+      <button class="home-welcome__profile-btn" type="button" onclick="openProfileModal()">Profil Saya</button>
+    </div>
+
+    <!-- Hero Banner -->
+    <div class="hero-banner hero-banner--fallback" onclick="window.location.href='/news/carlotta-sign-with-fnatic'" style="cursor: pointer;">
+      <img src="{{ url_for('static', filename='assets/home_banner.jpg') }}"
+           onerror="this.style.display='none'">
+      <span class="hero-banner__caption">Carlotta Sign With FNATIC</span>
+    </div>
+
+    <!-- News Card -->
+    <div class="news-card">
+      {% for n in news %}
+      {% set slug = news_slugs.get(n, 'tenz-retirement') if news_slugs else 'tenz-retirement' %}
+      <a class="news-item" href="/news/{{ slug }}">{{ n }}</a>
+      {% if not loop.last %}<div class="news-sep"></div>{% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ========== MIDDLE COLUMN (Upcoming Matches) ========== -->
+  <div class="home-mid">
+    <div class="section-title section-title--top">Upcoming Match</div>
+
+    {# Desktop: first 4 matches = purple accent, last 3 = teal accent #}
+    {% for a, b, d in matches %}
+    {% set accent = '#8a2be2' if loop.index <= 4 else '#17b890' %}
+    <div class="match-card" onclick="window.location.href='/matches'" style="cursor: pointer;">
+      <div class="match-card__body">
+        <div class="match-card__teams">
+          <span class="team-badge{% if colors.get(a,'') in ['#f2c200','#f0a000'] %} team-badge--dark-text{% endif %}"
+                style="background:{{ colors[a] }}">{{ a }}</span>
+          <span class="match-card__vs">-</span>
+          <span class="team-badge{% if colors.get(b,'') in ['#f2c200','#f0a000'] %} team-badge--dark-text{% endif %}"
+                style="background:{{ colors[b] }}">{{ b }}</span>
+        </div>
+        <span class="match-card__date">{{ d }}</span>
+      </div>
+      <div class="match-card__accent" style="background:{{ accent }}"></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ========== RIGHT COLUMN (Events) ========== -->
+  <div class="home-right">
+
+    {# ---- Live Events ---- #}
+    <div class="section-title section-title--top">Live Event</div>
+
+    {% set live_codes = ['MS','VK'] %}
+    {% for n, d, c in live %}
+    {% set code = live_codes[loop.index0] if loop.index0 < live_codes|length else '??' %}
+    {% set target_url = '/tournament/masters-santiago' if 'Masters' in n else '/matches' %}
+    <div class="event-card" onclick="window.location.href='{{ target_url }}'" style="cursor: pointer;">
+      <span class="event-card__icon" style="background:{{ c }}">{{ code }}</span>
+      <div class="event-card__text">
+        <span class="event-card__name">{{ n }}</span>
+        <span class="event-card__dates">{{ d }}</span>
+      </div>
+      <div class="event-card__accent" style="background:{{ c }}"></div>
+    </div>
+    {% endfor %}
+
+    {# ---- Upcoming Events ---- #}
+    <div class="section-title section-title--events-upcoming">Upcoming Event</div>
+
+    {% set up_codes = ['VC','CN','EM','AP','AM'] %}
+    {% set bright_colors = ['#b6e01b','#f0a000','#f2c200'] %}
+    {% for n, d, c in upcoming %}
+    {% set code = up_codes[loop.index0] if loop.index0 < up_codes|length else '??' %}
+    {% set up_url = '/tournament/cn-stage-1' if 'CN Stage 1' in n else '/matches' %}
+    <div class="event-card" onclick="window.location.href='{{ up_url }}'" style="cursor: pointer;">
+      <span class="event-card__icon{% if c in bright_colors %} event-card__icon--dark-text{% endif %}"
+            style="background:{{ c }}">{{ code }}</span>
+      <div class="event-card__text">
+        <span class="event-card__name">{{ n }}</span>
+        <span class="event-card__dates">{{ d }}</span>
+      </div>
+      <div class="event-card__accent" style="background:{{ c }}"></div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+{% endblock %}

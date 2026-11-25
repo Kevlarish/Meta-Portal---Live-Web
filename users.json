@@ -1,0 +1,35 @@
+{
+  "dika": {
+    "username": "dika",
+    "email": "aiysvdbu@gmail.com",
+    "salt": "3752d2b28dcdf772408874c6270ce960",
+    "hash": "fcb86d2034f2669334362fef03e1eb74b4ce73326bd37f784b82bd3f4ca61475",
+    "favorite_team": "None",
+    "created_at": "31 Oct 2026"
+  },
+  "bianmemek": {
+    "username": "bianmemek",
+    "email": "quwjekejj@gmail.com",
+    "salt": "64f8c937438d55e95213a11e987fbdbd",
+    "hash": "2823fb5bd3f7a4aa776d90281b8ac1343c10e7442e1d2fc9e26d23857d565a98",
+    "favorite_team": "None",
+    "created_at": "18 Nov 2026"
+  },
+  "dik": {
+    "username": "Dik",
+    "email": "dik@gmail.com",
+    "salt": "ed04d27650b0cfae6d524ce4934c6df7",
+    "hash": "3c9cc55af31afcd747b0a41d311d913af2bfa3f3c101468e61f6932bcee680e2",
+    "favorite_team": "None",
+    "created_at": "18 Nov 2026"
+  },
+  "niro": {
+    "username": "niro",
+    "email": "niro@gmail.com",
+    "salt": "3eb1287e0eb96af7b2eaef9f1385ccdc",
+    "hash": "8301cc3f715b89a926a57636fe96375a486cd0d89df8e0fbbb899d91666603a8",
+    "iter": 600000,
+    "favorite_team": "None",
+    "created_at": "20 Nov 2026"
+  }
+}

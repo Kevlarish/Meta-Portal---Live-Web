@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container player-page">
+  <!-- Player Header Card -->
+  <div class="player-header-card">
+    <div class="player-avatar-box">
+      <span>{{ player.nickname[:2].upper() }}</span>
+    </div>
+    <div class="player-meta-block">
+      <div class="player-main-name">
+        <span class="player-ign">{{ player.nickname }}</span>
+        <span class="player-real">{{ player.real_name }}</span>
+      </div>
+      <div class="player-country-line">
+        <span class="player-flag">{{ player.flag }}</span>
+        <span class="player-country">{{ player.country }}</span>
+        <span class="player-team-ref">• Tim: <a href="/team/prx">{{ player.team }}</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Mastery Table Card -->
+  <div class="player-agents-card">
+    <h2 class="agents-section-title">Agents</h2>
+    
+    <div class="table-scroll-container">
+      <table class="agents-stats-table">
+        <thead>
+          <tr>
+            <th>AGENT</th>
+            <th>USE</th>
+            <th>RND</th>
+            <th>RATING<sup>2.0</sup></th>
+            <th>ACS</th>
+            <th>K:D</th>
+            <th>ADR</th>
+            <th>KAST</th>
+            <th>KPR</th>
+            <th>APR</th>
+            <th>FKPR</th>
+            <th>FDPR</th>
+            <th>K</th>
+            <th>D</th>
+            <th>A</th>
+            <th>FK</th>
+            <th>FD</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in player.agents_data %}
+          <tr>
+            <td class="td-agent-name">
+              <span class="agent-avatar-icon">{{ a.agent[:2].upper() }}</span>
+              <span class="agent-title-text">{{ a.agent }}</span>
+            </td>
+            <td>{{ a.use }}</td>
+            <td>{{ a.rnd }}</td>
+            <td class="stat-highlight">{{ a.rating }}</td>
+            <td>{{ a.acs }}</td>
+            <td>{{ a.kd }}</td>
+            <td>{{ a.adr }}</td>
+            <td>{{ a.kast }}</td>
+            <td>{{ a.kpr }}</td>
+            <td>{{ a.apr }}</td>
+            <td>{{ a.fkpr }}</td>
+            <td>{{ a.fdpr }}</td>
+            <td>{{ a.k }}</td>
+            <td>{{ a.d }}</td>
+            <td>{{ a.a }}</td>
+            <td>{{ a.fk }}</td>
+            <td>{{ a.fd }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

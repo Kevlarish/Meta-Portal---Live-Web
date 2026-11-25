@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container team-page">
+  <!-- Team Banner Header Card -->
+  <div class="team-header-card">
+    <div class="team-badge-logo">{{ team.code }}</div>
+    <div class="team-title-block">
+      <h1 class="team-name">{{ team.name }}</h1>
+      <span class="team-code-tag">{{ team.code }}</span>
+    </div>
+    <div class="team-region-pill">{{ team.region }}</div>
+  </div>
+
+  <!-- Current Roster Section -->
+  <div class="team-section-card">
+    <h2 class="team-section-title">Current Roster</h2>
+
+    <div class="roster-category-label">PLAYERS</div>
+    <div class="roster-grid">
+      {% for p in team.roster %}
+      <div class="roster-player-card">
+        <div class="player-photo-placeholder">
+          <span>{{ p.name[:2].upper() }}</span>
+        </div>
+        <div class="player-details">
+          <div class="player-flag-name">
+            <span class="p-flag">{{ p.flag }}</span>
+            {% if p.name == 'f0rsakeN' %}
+            <a href="/player/f0rsaken" class="p-ign p-ign--link">{{ p.name }}</a>
+            {% else %}
+            <span class="p-ign">{{ p.name }}</span>
+            {% endif %}
+          </div>
+          <div class="player-real-name">{{ p.real_name }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="roster-category-label" style="margin-top: 30px;">STAFF</div>
+    <div class="roster-grid">
+      {% for s in team.staff %}
+      <div class="roster-player-card">
+        <div class="player-photo-placeholder staff-placeholder">
+          <span>{{ s.name[:2].upper() }}</span>
+        </div>
+        <div class="player-details">
+          <div class="player-flag-name">
+            <span class="p-flag">{{ s.flag }}</span>
+            <span class="p-ign">{{ s.name }}</span>
+          </div>
+          <div class="player-real-name">{{ s.real_name }}</div>
+          <div class="staff-role-badge">{{ s.role }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

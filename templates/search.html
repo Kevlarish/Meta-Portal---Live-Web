@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container search-page">
+  <!-- Query Display Box -->
+  <div class="search-query-card">
+    <div class="query-label">Query</div>
+    <div class="query-input-mock">{{ query }}</div>
+  </div>
+
+  <!-- Search Results Area -->
+  <div class="search-results-container">
+    {% if results %}
+    <div class="search-count-title">Found {{ results|length }} Result</div>
+    <div class="search-result-card">
+      {% for r in results %}
+      <a href="{{ r.url }}" class="search-result-item">
+        <div class="result-brand-badge">{{ r.code or r.title[:2].upper() }}</div>
+        <div class="result-text-block">
+          <div class="result-main-title">{{ r.title }}</div>
+          <div class="result-sub-desc">{{ r.description }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="search-count-title">No Result</div>
+    <div class="search-result-card search-result-card--empty">
+      {% if suggestion %}
+      <div class="search-suggestion-text">
+        Did you mean <a href="/search?q={{ suggestion }}" class="suggestion-link">{{ suggestion }}</a>?
+      </div>
+      {% else %}
+      <div class="search-empty-text">
+        Tidak ada data atau tim yang sesuai dengan kata kunci pencarian Anda.
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

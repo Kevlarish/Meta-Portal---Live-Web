@@ -1,0 +1,34 @@
+{
+  "messages": [
+    {
+      "id": "cmsg-1",
+      "sender": "Connor",
+      "msg": "When does Sentinel plays?",
+      "time": "18:30"
+    },
+    {
+      "id": "cmsg-2",
+      "sender": "Ikuyo Kita",
+      "msg": "Can't wait for BLG stomp TL",
+      "time": "18:31"
+    },
+    {
+      "id": "cmsg-3",
+      "sender": "Goldship",
+      "msg": "hey guys",
+      "time": "18:32"
+    },
+    {
+      "id": "cmsg-4",
+      "sender": "Gigguk",
+      "msg": "What's your pred goldship?",
+      "time": "18:33"
+    },
+    {
+      "id": "cmsg-5",
+      "sender": "Kazuma",
+      "msg": "is it just us in here?",
+      "time": "18:34"
+    }
+  ]
+}

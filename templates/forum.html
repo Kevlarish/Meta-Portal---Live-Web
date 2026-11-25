@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container forum-page">
+  <div class="forum-header-row">
+    <form method="get" action="/forum" class="forum-search-form">
+      <input type="text" name="q" class="forum-search-input" placeholder="Search...." value="{{ search_query or '' }}">
+    </form>
+    <a href="/forum/new" class="btn-start-thread">Start Thread</a>
+  </div>
+
+  <div class="forum-threads-card">
+    <div class="forum-thread-list">
+      {% for t in threads %}
+      <a href="/forum/{{ t.id }}" class="forum-thread-item">
+        <span class="thread-title">{{ t.title }}</span>
+        <span class="thread-author">{{ t.author }}</span>
+      </a>
+      {% else %}
+      <div class="thread-empty-box">
+        Tidak ditemukan thread diskusi dengan kata kunci pencarian.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

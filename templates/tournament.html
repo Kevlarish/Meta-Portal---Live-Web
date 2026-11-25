@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container tournament-page">
+
+  <!-- Tournament Header Card -->
+  <div class="tourney-header-card">
+    <div class="tourney-header-main">
+      <div class="tourney-brand-icon">✦</div>
+      <div class="tourney-info-block">
+        <h1 class="tourney-title">{{ tourney.name }}</h1>
+        <div class="tourney-dates">{{ tourney.dates }}</div>
+      </div>
+      <div class="tourney-active-dates">{{ tourney.active_dates }}</div>
+    </div>
+
+    <!-- Navigation Bar: Overview vs Pick'em -->
+    <div class="tourney-nav-tabs">
+      <div class="nav-tab-item {% if active_section != 'pickem' %}active{% endif %}" onclick="switchTourneySection('overview')">Overview</div>
+      <div class="nav-tab-item {% if active_section == 'pickem' %}active{% endif %}" onclick="switchTourneySection('pickem')">Pick'em</div>
+    </div>
+
+    <!-- Sub-toggles -->
+    <div class="tourney-sub-toggles">
+      <!-- Overview Sub Toggles: Swiss vs Playoffs -->
+      <div class="sub-toggle-group {% if active_section == 'pickem' %}hidden{% endif %}" id="overviewSubToggles">
+        <button type="button" class="sub-toggle-btn {% if active_sub != 'playoffs' %}active{% endif %}" id="btnSubSwiss" onclick="switchOverviewSub('swiss')">Swiss Stage</button>
+        <button type="button" class="sub-toggle-btn {% if active_sub == 'playoffs' %}active{% endif %}" id="btnSubPlayoffs" onclick="switchOverviewSub('playoffs')">Playoffs</button>
+      </div>
+
+      <!-- Pick'em Sub Toggles: Your Pick'em vs Leaderboard -->
+      <div class="sub-toggle-group {% if active_section != 'pickem' %}hidden{% endif %}" id="pickemSubToggles">
+        <button type="button" class="sub-toggle-btn {% if active_sub != 'leaderboard' %}active{% endif %}" id="btnSubPickem" onclick="switchPickemSub('mypickem')">Your Pick'em</button>
+        <button type="button" class="sub-toggle-btn {% if active_sub == 'leaderboard' %}active{% endif %}" id="btnSubLeaderboard" onclick="switchPickemSub('leaderboard')">Leaderboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 1. OVERVIEW: PLAYOFFS ==================== -->
+  <div class="tourney-pane {% if active_section == 'overview' and active_sub == 'playoffs' %}active{% endif %}" id="panePlayoffs">
+    <!-- Bracket Tree -->
+    <div class="bracket-card">
+      <div class="bracket-columns">
+        <!-- Round 1 -->
+        <div class="bracket-col">
+          <div class="round-title">Upper Bracket Round 1</div>
+          {% for m in tourney.playoffs.bracket_rounds[0].matches %}
+          <div class="bracket-match-node">
+            <div class="bracket-team-line">
+              <span class="b-name">{{ m.team1 }}</span>
+            </div>
+            <div class="bracket-team-line">
+              <span class="b-name">{{ m.team2 }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Round 2 -->
+        <div class="bracket-col">
+          <div class="round-title">Upper Bracket Round 2</div>
+          <div class="bracket-match-node bracket-match-node--r2">
+            <div class="bracket-team-line"><span class="b-name">TBD</span></div>
+            <div class="bracket-team-line"><span class="b-name">TBD</span></div>
+          </div>
+          <div class="bracket-match-node bracket-match-node--r2" style="margin-top: 60px;">
+            <div class="bracket-team-line"><span class="b-name">TBD</span></div>
+            <div class="bracket-team-line"><span class="b-name">TBD</span></div>
+          </div>
+        </div>
+
+        <!-- Upper Final -->
+        <div class="bracket-col">
+          <div class="round-title">Upper Bracket Final</div>
+          <div class="bracket-match-node bracket-match-node--r3">
+            <div class="bracket-team-line"><span class="b-name">TBD</span></div>
+            <div class="bracket-team-line"><span class="b-name">TBD</span></div>
+          </div>
+        </div>
+
+        <!-- Grand Final -->
+        <div class="bracket-col">
+          <div class="round-title">Grand Final</div>
+          <div class="bracket-match-node bracket-match-node--gf">
+            <div class="bracket-team-line"><span class="b-name">TBD</span></div>
+            <div class="bracket-team-line"><span class="b-name">TBD</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prize Distribution -->
+    <div class="tourney-sub-section">
+      <h3 class="section-heading">Prize Distribution</h3>
+      <table class="tourney-table prize-table">
+        <thead>
+          <tr>
+            <th>Place</th>
+            <th>Prize</th>
+            <th>Team</th>
+            <th>VCT Point</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in tourney.playoffs.prizes %}
+          <tr>
+            <td>{{ p.place }}</td>
+            <td class="col-prize-amt">{{ p.prize }}</td>
+            <td>-</td>
+            <td class="col-vct-point">{{ p.points }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Teams Participating -->
+    <div class="tourney-sub-section">
+      <h3 class="section-heading">Team Participating</h3>
+      <div class="teams-grid">
+        {% for t in tourney.playoffs.participating %}
+        <div class="team-card-box">
+          <div class="team-card-header">{{ t.name }}</div>
+          <div class="team-card-logo" style="background: {{ t.bg }};">{{ t.code }}</div>
+          <div class="team-card-seed">{{ t.seed }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. OVERVIEW: SWISS STAGE ==================== -->
+  <div class="tourney-pane {% if active_section == 'overview' and active_sub != 'playoffs' %}active{% endif %}" id="paneSwiss">
+    <div class="bracket-card">
+      <h2 class="swiss-headline">SWISS STAGE</h2>
+      <div class="swiss-diagram-grid">
+        <!-- Round 1 -->
+        <div class="swiss-col">
+          <div class="swiss-box-header">Round 1 (0-0)</div>
+          <div class="swiss-box-body">
+            {% for a, b in tourney.swiss_stage.round_1 %}
+            <div class="swiss-pair">
+              <span>{{ a }}</span> <small>vs</small> <span>{{ b }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Round 2 -->
+        <div class="swiss-col">
+          <div class="swiss-box-header">Round 2 (1-0)</div>
+          <div class="swiss-box-body">
+            {% for a, b in tourney.swiss_stage.round_2_1_0 %}
+            <div class="swiss-pair"><span>{{ a }}</span> <small>vs</small> <span>{{ b }}</span></div>
+            {% endfor %}
+          </div>
+
+          <div class="swiss-box-header" style="margin-top: 20px;">Round 2 (0-1)</div>
+          <div class="swiss-box-body">
+            {% for a, b in tourney.swiss_stage.round_2_0_1 %}
+            <div class="swiss-pair"><span>{{ a }}</span> <small>vs</small> <span>{{ b }}</span></div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Outcome Highlights -->
+        <div class="swiss-col">
+          <div class="swiss-status-card swiss-status--advanced">
+            <div class="status-title">ADVANCES TO PLAYOFF</div>
+            <div class="advanced-teams-row">
+              <span class="adv-badge" style="background: #c01b2e">PRX</span>
+              <span class="adv-badge" style="background: #17358a">TL</span>
+              <span class="adv-badge" style="background: #d4202f">T1</span>
+              <span class="adv-badge" style="background: #e4402a">NRG</span>
+            </div>
+          </div>
+
+          <div class="swiss-status-card swiss-status--eliminated" style="margin-top: 20px;">
+            <div class="status-title">ELIMINATED</div>
+            <div class="elim-teams-row">
+              <span class="elim-badge">XLG</span>
+              <span class="elim-badge">LEV</span>
+              <span class="elim-badge">TE</span>
+              <span class="elim-badge">BBL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Swiss Prizes -->
+    <div class="tourney-sub-section">
+      <h3 class="section-heading">Prize Distribution</h3>
+      <table class="tourney-table prize-table">
+        <thead>
+          <tr>
+            <th>Place</th>
+            <th>Prize</th>
+            <th>Team</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in tourney.swiss_stage.prizes %}
+          <tr>
+            <td>{{ p.place }}</td>
+            <td class="col-prize-amt">{{ p.prize }}</td>
+            <td>{{ p.team }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==================== 3. PICK'EM: INTERACTIVE BRACKET ==================== -->
+  <div class="tourney-pane {% if active_section == 'pickem' and active_sub != 'leaderboard' %}active{% endif %}" id="panePickem">
+    <div class="bracket-card pickem-bracket-card">
+      <div class="pickem-top-bar">
+        <div class="pickem-info">
+          <h3>Prediksi Pemenang Bracket Playoff</h3>
+          <p>Klik nama tim di setiap ronde untuk memilih tim unggulanmu ke babak berikutnya.</p>
+        </div>
+        <button type="button" class="btn-save-pickem" onclick="submitPickem()">Save Pick'em</button>
+      </div>
+
+      <div class="bracket-columns" id="pickemInteractiveContainer">
+        <!-- Interactive Upper Round 1 -->
+        <div class="bracket-col">
+          <div class="round-title">Upper Round 1</div>
+          <div class="bracket-match-node pickem-node" data-match="1">
+            <div class="bracket-team-line pickable" onclick="pickTeam(1, 'BLG')"><span class="b-name">BiliBili Gaming</span></div>
+            <div class="bracket-team-line pickable" onclick="pickTeam(1, 'TL')"><span class="b-name">Team Liquid</span></div>
+          </div>
+          <div class="bracket-match-node pickem-node" data-match="2">
+            <div class="bracket-team-line pickable" onclick="pickTeam(2, 'C9')"><span class="b-name">Cloud 9</span></div>
+            <div class="bracket-team-line pickable" onclick="pickTeam(2, 'PRX')"><span class="b-name">Paper Rex</span></div>
+          </div>
+          <div class="bracket-match-node pickem-node" data-match="3">
+            <div class="bracket-team-line pickable" onclick="pickTeam(3, 'RRQ')"><span class="b-name">Rex Regum Qeon</span></div>
+            <div class="bracket-team-line pickable" onclick="pickTeam(3, 'T1')"><span class="b-name">T1</span></div>
+          </div>
+          <div class="bracket-match-node pickem-node" data-match="4">
+            <div class="bracket-team-line pickable" onclick="pickTeam(4, 'VIT')"><span class="b-name">Team Vitality</span></div>
+            <div class="bracket-team-line pickable" onclick="pickTeam(4, 'NRG')"><span class="b-name">NRG</span></div>
+          </div>
+        </div>
+
+        <!-- Upper Round 2 -->
+        <div class="bracket-col">
+          <div class="round-title">Upper Round 2</div>
+          <div class="bracket-match-node pickem-node bracket-match-node--r2" data-match="5">
+            <div class="bracket-team-line pickable" id="pickNode_5_1"><span class="b-name">Pemenang R1-1</span></div>
+            <div class="bracket-team-line pickable" id="pickNode_5_2"><span class="b-name">Pemenang R1-2</span></div>
+          </div>
+          <div class="bracket-match-node pickem-node bracket-match-node--r2" style="margin-top: 60px;" data-match="6">
+            <div class="bracket-team-line pickable" id="pickNode_6_1"><span class="b-name">Pemenang R1-3</span></div>
+            <div class="bracket-team-line pickable" id="pickNode_6_2"><span class="b-name">Pemenang R1-4</span></div>
+          </div>
+        </div>
+
+        <!-- Upper Final -->
+        <div class="bracket-col">
+          <div class="round-title">Upper Final</div>
+          <div class="bracket-match-node pickem-node bracket-match-node--r3" data-match="7">
+            <div class="bracket-team-line pickable" id="pickNode_7_1"><span class="b-name">Finalis A</span></div>
+            <div class="bracket-team-line pickable" id="pickNode_7_2"><span class="b-name">Finalis B</span></div>
+          </div>
+        </div>
+
+        <!-- Champion -->
+        <div class="bracket-col">
+          <div class="round-title">Grand Final Champion</div>
+          <div class="bracket-match-node pickem-node bracket-match-node--gf" data-match="8">
+            <div class="bracket-team-line pickable" id="pickChampion"><span class="b-name">🏆 Champion Pick</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 4. PICK'EM: LEADERBOARD ==================== -->
+  <div class="tourney-pane {% if active_section == 'pickem' and active_sub == 'leaderboard' %}active{% endif %}" id="paneLeaderboard">
+    <div class="leaderboard-grid">
+      <!-- Left Leaderboard List -->
+      <div class="leaderboard-users-card">
+        <div class="leaderboard-header">Peringkat Global Pick'em</div>
+        <div class="leaderboard-list">
+          {% for u in tourney.leaderboard %}
+          <div class="leaderboard-row">
+            <span class="lb-points">{{ u.pts }} pts</span>
+            <span class="lb-flag">{{ u.flag }}</span>
+            <div class="lb-user-info">
+              <span class="lb-username">{{ u.user }}</span>
+              <span class="lb-country">{{ u.country }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Right Point Tier Distribution -->
+      <div class="leaderboard-stats-card">
+        <div class="stat-tier-box">
+          <div class="tier-pts-title">315 points</div>
+          <div class="tier-pts-sub">0% / 1 users</div>
+        </div>
+        <div class="stat-tier-box">
+          <div class="tier-pts-title">305 points</div>
+          <div class="tier-pts-sub">0% / 1 users</div>
+        </div>
+        <div class="stat-tier-box">
+          <div class="tier-pts-title">300 points</div>
+          <div class="tier-pts-sub">0% / 2 users</div>
+        </div>
+        <div class="stat-tier-box">
+          <div class="tier-pts-title">295 points</div>
+          <div class="tier-pts-sub">0% / 2 users</div>
+        </div>
+        <div class="stat-tier-box">
+          <div class="tier-pts-title">290 points</div>
+          <div class="tier-pts-sub">0% / 2 users</div>
+        </div>
+        <div class="stat-tier-box">
+          <div class="tier-pts-title">285 points</div>
+          <div class="tier-pts-sub">0% / 1 users</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentSection = "{{ active_section }}";
+let currentSub = "{{ active_sub }}";
+
+function switchTourneySection(sec) {
+  currentSection = sec;
+  document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tourney-pane').forEach(p => p.classList.remove('active'));
+  
+  if (sec === 'overview') {
+    document.querySelectorAll('.nav-tab-item')[0].classList.add('active');
+    document.getElementById('overviewSubToggles').classList.remove('hidden');
+    document.getElementById('pickemSubToggles').classList.add('hidden');
+    switchOverviewSub(currentSub === 'playoffs' ? 'playoffs' : 'swiss');
+  } else {
+    document.querySelectorAll('.nav-tab-item')[1].classList.add('active');
+    document.getElementById('overviewSubToggles').classList.add('hidden');
+    document.getElementById('pickemSubToggles').classList.remove('hidden');
+    switchPickemSub(currentSub === 'leaderboard' ? 'leaderboard' : 'mypickem');
+  }
+}
+
+function switchOverviewSub(sub) {
+  currentSub = sub;
+  document.getElementById('btnSubSwiss').classList.toggle('active', sub === 'swiss');
+  document.getElementById('btnSubPlayoffs').classList.toggle('active', sub === 'playoffs');
+  document.getElementById('paneSwiss').classList.toggle('active', sub === 'swiss');
+  document.getElementById('panePlayoffs').classList.toggle('active', sub === 'playoffs');
+}
+
+function switchPickemSub(sub) {
+  currentSub = sub;
+  document.getElementById('btnSubPickem').classList.toggle('active', sub === 'mypickem');
+  document.getElementById('btnSubLeaderboard').classList.toggle('active', sub === 'leaderboard');
+  document.getElementById('panePickem').classList.toggle('active', sub === 'mypickem');
+  document.getElementById('paneLeaderboard').classList.toggle('active', sub === 'leaderboard');
+}
+
+/* Pick'em Interactive State */
+const userPicks = {};
+function pickTeam(matchId, teamCode) {
+  userPicks[matchId] = teamCode;
+  const node = document.querySelector(`.pickem-node[data-match="${matchId}"]`);
+  if (node) {
+    node.querySelectorAll('.pickable').forEach(el => el.classList.remove('picked'));
+    const chosen = Array.from(node.querySelectorAll('.pickable')).find(el => el.textContent.includes(teamCode));
+    if (chosen) chosen.classList.add('picked');
+  }
+  
+  // Forward to round 2
+  if (matchId === 1) document.getElementById('pickNode_5_1').innerHTML = `<span class="b-name">${teamCode}</span>`;
+  if (matchId === 2) document.getElementById('pickNode_5_2').innerHTML = `<span class="b-name">${teamCode}</span>`;
+  if (matchId === 3) document.getElementById('pickNode_6_1').innerHTML = `<span class="b-name">${teamCode}</span>`;
+  if (matchId === 4) document.getElementById('pickNode_6_2').innerHTML = `<span class="b-name">${teamCode}</span>`;
+}
+
+function submitPickem() {
+  fetch('/api/pickem/save', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': (typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : '')
+    },
+    body: JSON.stringify(userPicks)
+  }).then(r => r.json()).then(data => {
+    showInfoModal("Pick'em Berhasil Disimpan", "Prediksi bracket playoff Anda telah berhasil disimpan ke akun Anda!");
+  }).catch(() => {
+    showInfoModal("Pick'em Disimpan", "Prediksi bracket playoff Anda telah berhasil disimpan!");
+  });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container forum-thread-page">
+  <!-- Thread Header Card -->
+  <div class="thread-main-card">
+    <h1 class="thread-headline">{{ thread.title }}</h1>
+    <div class="thread-posted-by">Posted By {{ thread.author }}</div>
+  </div>
+
+  <!-- Comments Stream -->
+  <div class="thread-comments-stream">
+    {% for c in thread.comments %}
+    <div class="comment-box {% if c.reply_to %}comment-box--reply{% endif %}">
+      <div class="comment-author-bar">
+        <span class="author-name">{{ c.author }}</span>
+        {% if c.reply_to %}
+        <span class="reply-target">↳ membalas {{ c.reply_to }}</span>
+        {% endif %}
+      </div>
+      <div class="comment-text">{{ c.text }}</div>
+      <div class="comment-meta-time">Posted {{ c.time }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Reply Input Card -->
+  <div class="thread-reply-card">
+    <form method="post" action="/forum/{{ thread.id }}/reply">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="reply-label">Text</label>
+      <textarea name="comment" class="reply-textarea" rows="4" placeholder="..." required></textarea>
+      <div class="reply-actions">
+        <button type="submit" class="btn-submit-post">Submit Post</button>
+        <a href="/forum" class="btn-cancel-post">Kembali ke Forum</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

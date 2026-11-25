@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    {# ---- Glass panel (left) ---- #}
+    <form class="auth-panel" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {# logo_y = 82 → padding-top: ~82px from top of panel #}
+      <div class="auth-logo" style="margin-top:82px;">META.PORTAL</div>
+
+      {# fields_top=135, spacing=38 → first field at 135px, second at 173px #}
+      <div class="auth-fields" style="margin-top:{{ 135 - 82 - 28 }}px; gap:{{ 38 - 28 }}px;">
+        <input class="auth-field" name="username" placeholder="Username" autocomplete="username" maxlength="64" autofocus>
+        <input class="auth-field" name="password" type="password" placeholder="Password" autocomplete="current-password" maxlength="128">
+      </div>
+
+      {# Links at y=222 from panel top → "Forgot Password?" left, "Sign Up" right #}
+      <div class="auth-links" style="margin-top:{{ 222 - 135 - 2*38 + 28 - 10 }}px;">
+        <a href="javascript:void(0)" onclick="openResetPasswordModal()">Forgot Password?</a>
+        <a href="/register">Sign Up</a>
+      </div>
+
+      {# button_y=268 from card top #}
+      <button class="auth-btn" type="submit" style="margin-top:{{ 268 - 222 - 16 }}px;">LOGIN</button>
+    </form>
+
+    {# ---- Photo (right) ---- #}
+    <div class="auth-photo auth-photo--login">
+      <img src="{{ url_for('static', filename='assets/login_banner.jpg') }}"
+           onerror="this.style.display='none'">
+    </div>
+  </div>
+</div>
+
+<script>
+  if ({{ 'true' if user else 'false' }}) {
+    window.location.replace('/home');
+  }
+  window.addEventListener('pageshow', function(event) {
+    if ({{ 'true' if user else 'false' }} || (event && event.persisted)) {
+      window.location.replace('/home');
+    }
+  });
+</script>
+{% endblock %}
+

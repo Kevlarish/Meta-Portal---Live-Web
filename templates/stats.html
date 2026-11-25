@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container stats-page">
+
+  <!-- Filter Card -->
+  <div class="stats-filter-card">
+    <form method="get" action="/stats" class="filter-form">
+      <div class="filter-row-top">
+        <div class="filter-field-group field-event-series">
+          <label class="filter-label">Event Series</label>
+          <input type="text" name="event_series" class="filter-input" value="{{ filters.event_series or 'All' }}" placeholder="All">
+        </div>
+      </div>
+
+      <div class="filter-row-bottom">
+        <div class="filter-field-group">
+          <label class="filter-label">Region</label>
+          <input type="text" name="region" class="filter-input" value="{{ filters.region or 'All' }}" placeholder="All">
+        </div>
+
+        <div class="filter-field-group">
+          <label class="filter-label">MIN # RNDS</label>
+          <input type="number" name="min_rnds" class="filter-input" value="{{ filters.min_rnds or '' }}" placeholder="0">
+        </div>
+
+        <div class="filter-field-group">
+          <label class="filter-label">MIN OOP RATING</label>
+          <input type="text" name="min_rating" class="filter-input" value="{{ filters.min_rating or '' }}" placeholder="0.0">
+        </div>
+
+        <div class="filter-field-group">
+          <label class="filter-label">AGENT</label>
+          <input type="text" name="agent" class="filter-input" value="{{ filters.agent or 'All' }}" placeholder="All">
+        </div>
+
+        <div class="filter-field-group">
+          <label class="filter-label">MAP</label>
+          <select name="map" class="filter-select">
+            <option value="All" {% if filters.map == 'All' %}selected{% endif %}>All</option>
+            <option value="Lotus" {% if filters.map == 'Lotus' %}selected{% endif %}>Lotus</option>
+            <option value="Sunset" {% if filters.map == 'Sunset' %}selected{% endif %}>Sunset</option>
+            <option value="Bind" {% if filters.map == 'Bind' %}selected{% endif %}>Bind</option>
+            <option value="Haven" {% if filters.map == 'Haven' %}selected{% endif %}>Haven</option>
+            <option value="Ascent" {% if filters.map == 'Ascent' %}selected{% endif %}>Ascent</option>
+          </select>
+        </div>
+
+        <div class="filter-field-group">
+          <label class="filter-label">TIMESPAN</label>
+          <select name="timespan" class="filter-select">
+            <option value="Past 60 Days" {% if filters.timespan == 'Past 60 Days' %}selected{% endif %}>Past 60 Days</option>
+            <option value="Past 30 Days" {% if filters.timespan == 'Past 30 Days' %}selected{% endif %}>Past 30 Days</option>
+            <option value="All Time" {% if filters.timespan == 'All Time' %}selected{% endif %}>All Time</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-actions-row">
+        <button type="submit" class="btn-filter-apply">Apply</button>
+        {% if filters.applied %}
+        <a href="/stats" class="btn-filter-reset">Reset Filter</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Content Row: Table + Legend -->
+  <div class="stats-data-row">
+    <!-- Main Stats Table -->
+    <div class="stats-table-wrapper">
+      <table class="comprehensive-stats-table">
+        <thead>
+          <tr>
+            <th class="th-player-col">PLAYER</th>
+            <th>AGENTS</th>
+            <th>RND</th>
+            <th>R<sup>1.2</sup></th>
+            <th>ACS</th>
+            <th>K:D</th>
+            <th>KAST</th>
+            <th>ADR</th>
+            <th>KPR</th>
+            <th>APR</th>
+            <th>FKPR</th>
+            <th>FDPR</th>
+            <th>HS%</th>
+            <th>CL%</th>
+            <th>CL</th>
+            <th>KMAX</th>
+            <th>K</th>
+            <th>D</th>
+            <th>A</th>
+            <th>FK</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in players %}
+          <tr class="tier-row-{{ p.tier|lower }}">
+            <td class="td-player-cell">
+              <span class="p-flag">{{ p.flag }}</span>
+              <div class="p-meta">
+                {% if p.player == 'something' or p.player == 'Jinggg' %}
+                <a href="/team/prx" class="p-link">{{ p.player }}</a>
+                {% else %}
+                <span class="p-name">{{ p.player }}</span>
+                {% endif %}
+                <span class="p-team-code">{{ p.team }}</span>
+              </div>
+            </td>
+            <td class="td-agents-cell">
+              {% for a in p.agents %}
+              <span class="agent-tag">{{ a }}</span>
+              {% endfor %}
+            </td>
+            <td>{{ p.rnd }}</td>
+            <td class="heatmap-rating cell-tier-{{ p.tier|lower }}">{{ p.rating }}</td>
+            <td class="heatmap-acs">{{ p.acs }}</td>
+            <td class="heatmap-kd">{{ p.kd }}</td>
+            <td>{{ p.kast }}</td>
+            <td>{{ p.adr }}</td>
+            <td>{{ p.kpr }}</td>
+            <td>{{ p.apr }}</td>
+            <td class="heatmap-good">{{ p.fkpr }}</td>
+            <td>{{ p.fdpr }}</td>
+            <td>{{ p.hs }}</td>
+            <td>{{ p.cl_pct }}</td>
+            <td>{{ p.cl }}</td>
+            <td>{{ p.kmax }}</td>
+            <td>{{ p.k }}</td>
+            <td>{{ p.d }}</td>
+            <td>{{ p.a }}</td>
+            <td>{{ p.fk }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Right Side Tier Legend -->
+    <div class="stats-legend-card">
+      <div class="legend-item">
+        <div class="legend-color-box tier-box-s"></div>
+        <div class="legend-text">
+          <div class="legend-title">Tier S</div>
+          <div class="legend-desc">Top 1-5%</div>
+        </div>
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color-box tier-box-a"></div>
+        <div class="legend-text">
+          <div class="legend-title">Tier A</div>
+          <div class="legend-desc">Good</div>
+        </div>
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color-box tier-box-b"></div>
+        <div class="legend-text">
+          <div class="legend-title">Tier B</div>
+          <div class="legend-desc">Average</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

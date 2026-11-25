@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container news-page">
+  <div class="news-article-card">
+    <div class="news-top-nav">
+      <a href="/home" class="news-back-link">← Kembali ke Halaman Utama</a>
+      <span class="news-badge-pill">{{ article.badge }}</span>
+    </div>
+
+    <h1 class="news-headline">{{ article.title }}</h1>
+    
+    <div class="news-byline">
+      <span class="news-author">{{ article.author }}</span>
+      <span class="news-dot">•</span>
+      <span class="news-date">{{ article.date }}</span>
+    </div>
+
+    {% if article.slug == 'carlotta-sign-with-fnatic' %}
+    <div class="news-article-banner">
+      <img src="{{ url_for('static', filename='assets/home_banner.jpg') }}" onerror="this.parentElement.style.display='none'">
+    </div>
+    {% endif %}
+
+    <div class="news-article-body">
+      {% for p in article.content %}
+      <p class="news-paragraph">{{ p }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="news-footer-actions">
+      <a href="/home" class="btn-news-return">Lihat Berita Lainnya</a>
+      <a href="/forum" class="btn-news-discuss">Diskusikan di Forum</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

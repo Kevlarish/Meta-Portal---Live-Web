@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container forum-new-page">
+  <div class="forum-create-card">
+    <form method="post" action="/forum/new">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="create-field-group">
+        <label class="create-label">Title</label>
+        <input type="text" name="title" class="create-input" placeholder="..." required autofocus>
+      </div>
+
+      <div class="create-field-group" style="margin-top: 20px;">
+        <label class="create-label">Text</label>
+        <textarea name="content" class="create-textarea" rows="6" placeholder="..." required></textarea>
+      </div>
+
+      <div class="create-actions" style="margin-top: 24px;">
+        <button type="submit" class="btn-submit-thread">Submit Thread</button>
+        <a href="/forum" class="btn-cancel-post" style="margin-left: 12px;">Batal</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

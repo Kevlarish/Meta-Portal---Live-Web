@@ -1,0 +1,89 @@
+{
+  "dika": [
+    {
+      "id": "bc36c350",
+      "sender": "Sistem META.PORTAL",
+      "title": "Selamat Datang di META.PORTAL!",
+      "body": "Halo dika, selamat datang di META.PORTAL! Di sini kamu bisa memantau jadwal pertandingan esports, membaca berita terbaru, dan mengelola profil akunmu.",
+      "date": "01 Nov 2026, 12:11",
+      "read": true,
+      "category": "System"
+    },
+    {
+      "id": "d4968638",
+      "sender": "Turnamen Hub",
+      "title": "Pengingat: Jadwal Match VCT Mendatang",
+      "body": "Pertandingan seru antara Paper Rex dan NRG akan segera berlangsung akhir pekan ini. Jangan lewatkan siaran langsung dan dukung tim favoritmu!",
+      "date": "01 Nov 2026, 12:11",
+      "read": true,
+      "category": "Match"
+    }
+    {
+      "id": "d4968638",
+      "sender": "Test Messages",
+      "title": "Are You Seeing This Message?",
+      "body": "LSC",
+      "date": "19 Nov 2026, 00:33",
+      "read": true,
+      "category": "Match"
+    }
+  ],
+  "lonte123": [
+    {
+      "id": "87c1d51b",
+      "sender": "Sistem META.PORTAL",
+      "title": "Selamat Datang di META.PORTAL!",
+      "body": "Halo lonte123, selamat datang di META.PORTAL! Di sini kamu bisa memantau jadwal pertandingan esports, membaca berita terbaru, dan mengelola profil akunmu.",
+      "date": "01 Nov 2026, 12:34",
+      "read": true,
+      "category": "System"
+    },
+    {
+      "id": "e2a4c37c",
+      "sender": "Turnamen Hub",
+      "title": "Pengingat: Jadwal Match VCT Mendatang",
+      "body": "Pertandingan seru antara Paper Rex dan NRG akan segera berlangsung akhir pekan ini. Jangan lewatkan siaran langsung dan dukung tim favoritmu!",
+      "date": "01 Nov 2026, 12:34",
+      "read": true,
+      "category": "Match"
+    },
+    {
+      "id": "13d67498",
+      "sender": "Komunitas Esports",
+      "title": "Tips Keamanan Akun",
+      "body": "Pastikan kamu menggunakan password yang kuat dan mengupdate tim favorit di tab profil untuk mendapatkan berita yang sesuai.",
+      "date": "30 Oct 2026, 14:20",
+      "read": true,
+      "category": "Security"
+    }
+  ],
+  "norad": [
+    {
+      "id": "6d3e4135",
+      "sender": "Sistem META.PORTAL",
+      "title": "Selamat Datang di META.PORTAL!",
+      "body": "Halo norad, selamat datang di META.PORTAL! Di sini kamu bisa memantau jadwal pertandingan esports, membaca berita terbaru, dan mengelola profil akunmu.",
+      "date": "18 Nov 2026, 12:28",
+      "read": false,
+      "category": "System"
+    },
+    {
+      "id": "3afc386d",
+      "sender": "Turnamen Hub",
+      "title": "Pengingat: Jadwal Match VCT Mendatang",
+      "body": "Pertandingan seru antara Paper Rex dan NRG akan segera berlangsung akhir pekan ini. Jangan lewatkan siaran langsung dan dukung tim favoritmu!",
+      "date": "18 Nov 2026, 12:28",
+      "read": false,
+      "category": "Match"
+    },
+    {
+      "id": "4f8ee199",
+      "sender": "Komunitas Esports",
+      "title": "Tips Keamanan Akun",
+      "body": "Pastikan kamu menggunakan password yang kuat dan mengupdate tim favorit di tab profil untuk mendapatkan berita yang sesuai.",
+      "date": "30 Oct 2026, 14:20",
+      "read": true,
+      "category": "Security"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container matches-page">
+  <!-- Top Toggle Card (Matches Upcoming / Result) -->
+  <div class="matches-header-card">
+    <div class="matches-header-title">Matches</div>
+    <div class="matches-toggle-group">
+      <button type="button" class="matches-toggle-btn {% if active_tab != 'result' %}active{% endif %}" id="tabBtnUpcoming" onclick="switchMatchesTab('upcoming')">
+        Upcoming
+      </button>
+      <button type="button" class="matches-toggle-btn {% if active_tab == 'result' %}active{% endif %}" id="tabBtnResult" onclick="switchMatchesTab('result')">
+        Result
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Table Card -->
+  <div class="matches-table-card">
+
+    <!-- ========== TAB UPCOMING ========== -->
+    <div class="matches-tab-content {% if active_tab != 'result' %}active{% endif %}" id="tabContentUpcoming">
+      <div class="match-list-table">
+        {% for m in upcoming_matches %}
+        <div class="match-row match-row--upcoming" onclick="window.location.href='/watch'">
+          <div class="col-time">{{ m.time }}</div>
+          
+          <div class="col-teams">
+            <div class="team-line">
+              <span class="flag-icon">{{ m.flag_a }}</span>
+              <span class="team-name">{{ m.team_a }}</span>
+            </div>
+            <div class="team-line">
+              <span class="flag-icon">{{ m.flag_b }}</span>
+              <span class="team-name">{{ m.team_b }}</span>
+            </div>
+          </div>
+
+          <div class="col-score">
+            <div>{{ m.score_a }}</div>
+            <div>{{ m.score_b }}</div>
+          </div>
+
+          <div class="col-status">
+            {% if m.status_type == 'live' %}
+            <span class="badge-status badge-status--live">LIVE</span>
+            {% else %}
+            <span class="badge-status badge-status--upcoming">{{ m.status_text }}</span>
+            {% endif %}
+          </div>
+
+          <div class="col-meta">
+            <div class="meta-label">STATS: <span class="meta-val">{{ m.stats_status }}</span></div>
+            <div class="meta-label">VODS: <span class="meta-val">{{ m.vods_status }}</span></div>
+          </div>
+
+          <div class="col-tournament">
+            <div class="tourney-stage">{{ m.tournament_stage }}</div>
+            <div class="tourney-name">{{ m.tournament_name }}</div>
+          </div>
+
+          <div class="col-accent" style="background: {{ m.accent }};"></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ========== TAB RESULT ========== -->
+    <div class="matches-tab-content {% if active_tab == 'result' %}active{% endif %}" id="tabContentResult">
+      <div class="match-list-table">
+        {% for m in result_matches %}
+        <div class="match-row match-row--result" onclick="window.location.href='/match/t1-vs-prx'">
+          <div class="col-time">{{ m.time }}</div>
+          
+          <div class="col-teams">
+            <div class="team-line">
+              <span class="flag-icon">{{ m.flag_a }}</span>
+              <span class="team-name">{{ m.team_a }}</span>
+            </div>
+            <div class="team-line">
+              <span class="flag-icon">{{ m.flag_b }}</span>
+              <span class="team-name">{{ m.team_b }}</span>
+            </div>
+          </div>
+
+          <div class="col-score">
+            <div class="{% if m.score_a > m.score_b %}score-winner{% endif %}">{{ m.score_a }}</div>
+            <div class="{% if m.score_b > m.score_a %}score-winner{% endif %}">{{ m.score_b }}</div>
+          </div>
+
+          <div class="col-status">
+            <span class="badge-status badge-status--completed">Completed {{ m.elapsed }}</span>
+          </div>
+
+          <div class="col-meta">
+            <div class="meta-stats-group">
+              <span class="meta-stats-label">STATS:</span>
+              <a href="/match/t1-vs-prx" class="btn-micro-stat" onclick="event.stopPropagation()">Map</a>
+              <a href="/match/t1-vs-prx" class="btn-micro-stat" onclick="event.stopPropagation()">Player</a>
+            </div>
+            <div class="meta-label">VODS: <span class="meta-val">Unavailable</span></div>
+          </div>
+
+          <div class="col-tournament">
+            <div class="tourney-stage">{{ m.tournament_stage }}</div>
+            <div class="tourney-name">{{ m.tournament_name }}</div>
+          </div>
+
+          <div class="col-accent" style="background: {{ m.accent }};"></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function switchMatchesTab(tab) {
+  const isUp = (tab === 'upcoming');
+  document.getElementById('tabBtnUpcoming').classList.toggle('active', isUp);
+  document.getElementById('tabBtnResult').classList.toggle('active', !isUp);
+  document.getElementById('tabContentUpcoming').classList.toggle('active', isUp);
+  document.getElementById('tabContentResult').classList.toggle('active', !isUp);
+  history.replaceState(null, '', '/matches?tab=' + tab);
+}
+</script>
+
+{% endblock %}

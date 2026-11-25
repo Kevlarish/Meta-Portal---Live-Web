@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    {# ---- Glass panel (left) ---- #}
+    <form class="auth-panel" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {# logo_y = 58 #}
+      <div class="auth-logo" style="margin-top:58px;">META.PORTAL</div>
+
+      {# fields_top=98, spacing=40, 4 fields #}
+      <div class="auth-fields" style="margin-top:{{ 98 - 58 - 28 }}px; gap:{{ 40 - 28 }}px;">
+        <input class="auth-field" name="username" placeholder="Username" autocomplete="username" maxlength="20" autofocus>
+        <input class="auth-field" name="email" type="email" placeholder="Email" autocomplete="email" maxlength="254">
+        <input class="auth-field" name="password" type="password" placeholder="Password" autocomplete="new-password" maxlength="128">
+        <input class="auth-field" name="confirm" type="password" placeholder="Confirm Password" autocomplete="new-password" maxlength="128">
+      </div>
+
+      {# button_y=284 #}
+      <button class="auth-btn" type="submit" style="margin-top:{{ 284 - 98 - 4*40 + 28 - 2 }}px;">Create Account</button>
+
+      {# link at y=322 centered #}
+      <div class="auth-links auth-links--center" style="margin-top:{{ 322 - 284 - 14 }}px;">
+        <a href="/login">Already Have An Account?</a>
+      </div>
+    </form>
+
+    {# ---- Photo (right) ---- #}
+    <div class="auth-photo auth-photo--register">
+      <img src="{{ url_for('static', filename='assets/register_banner.jpg') }}"
+           onerror="this.style.display='none'">
+    </div>
+  </div>
+</div>
+
+<script>
+  if ({{ 'true' if user else 'false' }}) {
+    window.location.replace('/home');
+  }
+  window.addEventListener('pageshow', function(event) {
+    if ({{ 'true' if user else 'false' }} || (event && event.persisted)) {
+      window.location.replace('/home');
+    }
+  });
+</script>
+{% endblock %}
+

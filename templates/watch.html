@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="page-container watch-page">
+  <div class="watch-layout">
+
+    <!-- Left / Center: Broadcast Video Area -->
+    <div class="watch-main-column">
+      <div class="watch-stream-card">
+        <div class="watch-header-bar">
+          <h1 class="watch-title">{{ watch_data.title }}</h1>
+        </div>
+
+        <div class="watch-video-screen">
+          <div class="video-overlay-header">
+            <span class="video-clock-pill">{{ watch_data.video_title }}</span>
+            <span class="video-sponsor-tag">mastercard <b>priceless</b></span>
+          </div>
+
+          <div class="video-main-content">
+            <div class="video-promo-banner">
+              <div class="promo-text-clutch">GOING FOR<br>THE CLUTCH IN<br>THE 1v5?</div>
+              <div class="promo-brand">RED BULL GIVES YOU WIIINGS.®</div>
+            </div>
+
+            <div class="video-match-overlay">
+              <div class="overlay-match-item">
+                <span class="tag-game">GAME 1</span>
+                <div class="overlay-teams">
+                  <span class="tag-team tag-team--blg">BLG <b>#CHINA1</b></span>
+                  <span class="tag-vs">vs</span>
+                  <span class="tag-team tag-team--tl">TL <b>#EMEA3</b></span>
+                </div>
+              </div>
+
+              <div class="overlay-match-item" style="margin-top: 15px;">
+                <span class="tag-game">GAME 2</span>
+                <div class="overlay-teams">
+                  <span class="tag-team tag-team--rrq">RRQ <b>#PAC1</b></span>
+                  <span class="tag-vs">vs</span>
+                  <span class="tag-team tag-team--t1">T1 <b>#PAC2</b></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-lower-lineup">
+            <div class="lineup-label">T1 TEAM LINEUP</div>
+            <div class="lineup-players">
+              <span class="lineup-item">CARPE</span>
+              <span class="lineup-item">IZU</span>
+              <span class="lineup-item">KDG</span>
+              <span class="lineup-item">METEOR</span>
+              <span class="lineup-item">MUNCHKIN</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Platform Stream Buttons -->
+      <div class="watch-external-platforms">
+        <a href="https://www.youtube.com/@VALORANTChampionsTour" target="_blank" class="platform-btn platform-btn--yt">
+          <span class="platform-icon">▶</span>
+          <span>VALORANT Champions Tour</span>
+        </a>
+        <a href="https://www.tiktok.com/@valorantesports" target="_blank" class="platform-btn platform-btn--tt">
+          <span class="platform-icon">♪</span>
+          <span>VALORANT Champions Tour</span>
+        </a>
+        <a href="https://www.twitch.tv/valorant" target="_blank" class="platform-btn platform-btn--tw">
+          <span class="platform-icon">⚲</span>
+          <span>VALORANT Champions Tour</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: Live Chat Box -->
+    <div class="watch-chat-column">
+      <div class="chat-container">
+        <div class="chat-header">
+          <span class="chat-title">Live Match Chat</span>
+          <span class="chat-live-indicator">● LIVE</span>
+        </div>
+
+        <div class="chat-messages-area" id="chatMessagesArea">
+          {% for c in chat_messages %}
+          <div class="chat-msg-row" data-id="{{ c.id }}">
+            <div class="chat-avatar">{{ c.sender[:2].upper() }}</div>
+            <div class="chat-content">
+              <div class="chat-meta">
+                <span class="chat-author">{{ c.sender }}</span>
+                {% if c.time %}<span class="chat-time">{{ c.time }}</span>{% endif %}
+              </div>
+              <span class="chat-text">{{ c.msg }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="chat-input-bar">
+          <div class="chat-input-avatar">{{ (user or 'ME')[:2].upper() }}</div>
+          <input type="text" class="chat-input-field" id="chatInputText" placeholder="Kirim pesan live..." maxlength="300" onkeydown="handleChatSubmit(event)">
+          <button type="button" class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const CSRF_TOKEN = "{{ csrf_token() }}";
+const CURRENT_USER = "{{ user or '' }}";
+let lastMsgId = null;
+let isPolling = false;
+let isSending = false;
+
+// Inisialisasi lastMsgId dari render awal server
+(function initChat() {
+  const area = document.getElementById('chatMessagesArea');
+  if (area) {
+    const rows = area.querySelectorAll('.chat-msg-row');
+    if (rows.length > 0) {
+      lastMsgId = rows[rows.length - 1].getAttribute('data-id');
+    }
+    area.scrollTop = area.scrollHeight;
+  }
+})();
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function appendMessages(messages) {
+  const area = document.getElementById('chatMessagesArea');
+  if (!area || !messages || messages.length === 0) return;
+
+  const isNearBottom = (area.scrollHeight - area.scrollTop - area.clientHeight) < 120;
+  let added = false;
+
+  messages.forEach(c => {
+    if (!c || !c.id) return;
+    if (area.querySelector(`.chat-msg-row[data-id="${c.id}"]`)) return;
+
+    const row = document.createElement('div');
+    row.className = 'chat-msg-row';
+    row.setAttribute('data-id', c.id);
+
+    const sender = c.sender || 'User';
+    const initials = escapeHtml(sender.slice(0, 2).toUpperCase());
+    const authorSafe = escapeHtml(sender);
+    const msgSafe = escapeHtml(c.msg || '');
+    const timeSafe = c.time ? `<span class="chat-time">${escapeHtml(c.time)}</span>` : '';
+
+    row.innerHTML = `
+      <div class="chat-avatar">${initials}</div>
+      <div class="chat-content">
+        <div class="chat-meta">
+          <span class="chat-author">${authorSafe}</span>
+          ${timeSafe}
+        </div>
+        <span class="chat-text">${msgSafe}</span>
+      </div>
+    `;
+    area.appendChild(row);
+    lastMsgId = c.id;
+    added = true;
+  });
+
+  if (added && isNearBottom) {
+    area.scrollTop = area.scrollHeight;
+  }
+}
+
+async function fetchNewMessages() {
+  if (isPolling) return;
+  isPolling = true;
+  try {
+    const url = lastMsgId ? `/api/chat/messages?since=${encodeURIComponent(lastMsgId)}` : '/api/chat/messages';
+    const res = await fetch(url, {
+      headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.messages) && data.messages.length > 0) {
+        appendMessages(data.messages);
+      }
+    }
+  } catch (err) {
+    // Polling background silent fail
+  } finally {
+    isPolling = false;
+  }
+}
+
+// Polling interval 2.5 detik untuk sinkronisasi live real-time
+setInterval(fetchNewMessages, 2500);
+
+async function sendChatMessage() {
+  if (isSending) return;
+  const input = document.getElementById('chatInputText');
+  const btn = document.getElementById('chatSendBtn');
+  const val = input.value.trim();
+  if (!val) return;
+
+  isSending = true;
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/chat/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': CSRF_TOKEN
+      },
+      body: JSON.stringify({ msg: val })
+    });
+    const data = await res.json();
+    if (data.ok && data.message) {
+      input.value = '';
+      appendMessages([data.message]);
+      const area = document.getElementById('chatMessagesArea');
+      if (area) area.scrollTop = area.scrollHeight;
+    } else {
+      alert(data.message || 'Gagal mengirim pesan.');
+    }
+  } catch (err) {
+    console.error('Chat send error:', err);
+    alert('Terjadi kendala koneksi saat mengirim pesan.');
+  } finally {
+    isSending = false;
+    if (btn) btn.disabled = false;
+    input.focus();
+  }
+}
+
+function handleChatSubmit(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+</script>
+
+{% endblock %}
