@@ -1,4 +1,17 @@
+# Kunci rahasia & konfigurasi sensitif
 secret.key
+.env
+
+# Database JSON runtime & file lock
+users.json
+messages.json
+live_chat.json
+forum.json
+*.lock
+*.tmp
+.*.tmp
+
+# Cache Python & editor
 __pycache__/
 *.py[cod]
-.env
+.vscode/
